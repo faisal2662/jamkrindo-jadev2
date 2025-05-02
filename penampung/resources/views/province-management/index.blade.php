@@ -111,7 +111,7 @@
                                         required>
                                 </td>
                             </tr>
-                            <tr>
+nm               <tr>
                                 <th>Kode Provinsi</th>
                                 <td><input type="text" name="kode_provinsi" id="kode_provinsi" class="form-control"
                                         required></td>

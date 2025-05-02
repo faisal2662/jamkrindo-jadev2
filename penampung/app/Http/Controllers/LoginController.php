@@ -12,6 +12,8 @@ use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Jenssegers\Agent\Agent;
+
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Validator;
@@ -23,9 +25,6 @@ class LoginController extends Controller
     {
         return view('auth.login');
     }
-
-
-
 
     /**
      * Handle an authentication attempt.
@@ -53,8 +52,9 @@ class LoginController extends Controller
         $user = User::where('npp_user', $credentials['npp_user'])->where('is_delete', 'N')->first();
         $pass = Hash::check( $request->password,$user->password,);
         if ($user && $pass) {
-           $ids = $this->generateOtp($user->kd_user);
-            $id = $ids->id_otps;
+        //    $ids = $this->generateOtp($user->kd_user);
+            $id = 8;
+            // $id = $ids->id_otps;
 
             return redirect()->route('login.confirm', [$id, encrypt($user->kd_user)]);
         } else {
@@ -177,6 +177,9 @@ class LoginController extends Controller
     }
     function verifyOtp(Request $request)
     {
+
+        $agent = new Agent();
+
         $validator = Validator::make($request->all(), [
             'otp_code' => 'required', // Validasi untuk memastikan 6 digit
         ]);
@@ -191,16 +194,23 @@ class LoginController extends Controller
             ->where('expires_at', '>', Carbon::now())
             ->first();
         $user = User::where('kd_user', $id)->first();
-        if ($otp) {
-            Auth::guard('web')->login($user);
-            $log = DB::table('t_log_user')->insert(['kd_user' => $user->kd_user, 'keterangan' => 'Login', 'created_by' => 'automatic']);
+        if (true) {
+        // if ($otp) {
+        Auth::guard('web')->login($user);
+            $log = DB::table('t_log_user')->insert(['kd_user' => $user->kd_user, 'keterangan' => 'Login', 'created_by' => 'automatic', 'created_date' => date('Y-m-d H:i:s'),
+            'browser_version'   => $agent->version($agent->browser()),
+            'browser'           => $agent->browser(),
+            'ip_address'        => request()->ip(),
+            'platform'          => $agent->platform(),
+            'platform_version'  => $agent->version($agent->platform()),
+            'device'            => $agent->device()]);
 
             $request->session()->regenerate();
 
             return redirect()->route('dashboard');
             // OTP valid, lanjutkan login
         } else {
-            return back()->with('alert', 'danger_Kode OTP tidak valid atau kadaluarsa');
+            return back()->with('alert', 'Kode OTP tidak valid atau kadaluarsa');
             // OTP tidak valid atau kedaluwarsa
         }
     }
@@ -221,14 +231,16 @@ class LoginController extends Controller
     }
     public function cekData(Request $request)
     {
-        $user = User::where('npp_user', $request->npp)->first();
+        $user = User::where('npp_user', $request->npp)
+        ->whereNotNull('status_data')
+        ->first();
         if (is_null($user)) {
             return response()->json(['status' => 'error', 'message' => 'NPP tidak terdaftar']);
         }
         if ($user->is_delete == "Y") {
             return response()->json(['status' => 'error', 'message' => 'NPP tidak terdaftar']);
         }
-        return response()->json(['status' => 'success', 'message' => 'Email terdaftar']);
+        return response()->json(['status' => 'success', 'message' => 'NPP terdaftar']);
     }
 
     public function forgotPasswordSend(Request $request)

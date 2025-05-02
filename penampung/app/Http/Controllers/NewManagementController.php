@@ -23,55 +23,89 @@ class NewManagementController extends Controller
         $role = Role::where('id_account', Auth::user()->kd_user)->where('id_menu', 16)->first();
         return view('news-management.index', compact('role'));
     }
+    // public function indexOld()
+    // {
+    //     //
+    //     $role = Role::where('id_account', Auth::user()->kd_user)->where('id_menu', 16)->first();
+    //     return view('news-management.index', compact('role'));
+    // }
 
 
     public function getData()
     {
         $role = Role::where('id_account', Auth::user()->kd_user)->where('id_menu', 16)->first();
-        $news = News::where('is_delete', 'N')->orderBy('created_date', 'desc')->get();
+        $news = DB::table('m_berita_server')->where('m_berita_server.is_delete', 'N')->leftJoin('m_category_news', 'm_berita_server.news_category', 'm_category_news.id_category_news')->select('m_berita_server.*', 'm_category_news.category_name as category_name')->orderBy('m_berita_server.created_date', 'desc')->get();
 
         $no = 1;
 
         foreach ($news as $item) {
 
             $item->no = $no++;
-            $formattedDate = Carbon::parse($item->tgl_berita)->locale('id')->translatedFormat('l, d F Y H:i') . ' WIB';
+            $formattedDate = Carbon::parse($item->created_date)->locale('id')->translatedFormat('l, d F Y H:i') . ' WIB';
 
             $item->tgl_upload = $formattedDate;
+            $item->category = $item->category_name;
 
-            if ($item->status_berita == "Publish") {
-                $item->status_berita =  " <span class='badge bg-success'> " . $item->status_berita . "</span> ";
+
+            if ($item->news_status) {
+                $item->status =  " <span class='badge bg-success'> Aktif</span> ";
             } else {
-                $item->status_berita =  " <span class='badge bg-warning'> " . $item->status_berita . "</span> ";
+                $item->status =  " <span class='badge bg-warning'>Tidak Aktif</span> ";
             }
 
-            if ($role->can_update == 'Y' && $role->can_delete == 'Y') {
-                $item->action = "<a href='news-management/lihat/" . $item->id_berita . "' class='btn'><i
-                                                    class='bi bi-search'></i></a>
-                                                    <a href='news-management/edit/" . $item->id_berita . "' class='btn'><i
-                                                    class='bi bi-pencil-square'></i></a>
-
-                                                     <button class='btn btn-sm fw-bold' onclick='newsDelete(\"" . $item->id_berita . "\" )'><i
-                                                    class='bi bi-trash' ></i></button>";
-            } else if ($role->can_update == 'Y') {
-                $item->action = "<a href='news-management/lihat/" . $item->id_berita . "' class='btn'><i
-                                                    class='bi bi-search'></i></a>
-                                                    <a href='news-management/edit/" . $item->id_berita . "' class='btn'><i
-                                                    class='bi bi-pencil-square'></i></a>";
-            } else if ($role->can_delete == 'Y') {
-                $item->action = "<a href='news-management/lihat/" . $item->id_berita . "' class='btn'><i
-                                                    class='bi bi-search'></i></a>
-
-                                                     <button class='btn btn-sm fw-bold' onclick='newsDelete(\"" . $item->id_berita . "\" )'><i
-                                                    class='bi bi-trash' ></i></button>";
-            } else {
-                $item->action = "<a href='news-management/lihat/" . $item->id_berita . "' class='btn'><i
+                $item->action = "<a href='news-management/lihat/" . $item->id_news . "' class='btn'><i
                                                     class='bi bi-search'></i></a>";
-            }
         }
 
         return datatables::of($news)->escapeColumns([])->make(true);
     }
+    // public function getDataOLd()
+    // {
+    //     $role = Role::where('id_account', Auth::user()->kd_user)->where('id_menu', 16)->first();
+    //     $news = News::where('is_delete', 'N')->orderBy('created_date', 'desc')->get();
+
+    //     $no = 1;
+
+    //     foreach ($news as $item) {
+
+    //         $item->no = $no++;
+    //         $formattedDate = Carbon::parse($item->tgl_berita)->locale('id')->translatedFormat('l, d F Y H:i') . ' WIB';
+
+    //         $item->tgl_upload = $formattedDate;
+
+    //         if ($item->status_berita == "Publish") {
+    //             $item->status_berita =  " <span class='badge bg-success'> " . $item->status_berita . "</span> ";
+    //         } else {
+    //             $item->status_berita =  " <span class='badge bg-warning'> " . $item->status_berita . "</span> ";
+    //         }
+
+    //         if ($role->can_update == 'Y' && $role->can_delete == 'Y') {
+    //             $item->action = "<a href='news-management/lihat/" . $item->id_berita . "' class='btn'><i
+    //                                                 class='bi bi-search'></i></a>
+    //                                                 <a href='news-management/edit/" . $item->id_berita . "' class='btn'><i
+    //                                                 class='bi bi-pencil-square'></i></a>
+
+    //                                                  <button class='btn btn-sm fw-bold' onclick='newsDelete(\"" . $item->id_berita . "\" )'><i
+    //                                                 class='bi bi-trash' ></i></button>";
+    //         } else if ($role->can_update == 'Y') {
+    //             $item->action = "<a href='news-management/lihat/" . $item->id_berita . "' class='btn'><i
+    //                                                 class='bi bi-search'></i></a>
+    //                                                 <a href='news-management/edit/" . $item->id_berita . "' class='btn'><i
+    //                                                 class='bi bi-pencil-square'></i></a>";
+    //         } else if ($role->can_delete == 'Y') {
+    //             $item->action = "<a href='news-management/lihat/" . $item->id_berita . "' class='btn'><i
+    //                                                 class='bi bi-search'></i></a>
+
+    //                                                  <button class='btn btn-sm fw-bold' onclick='newsDelete(\"" . $item->id_berita . "\" )'><i
+    //                                                 class='bi bi-trash' ></i></button>";
+    //         } else {
+    //             $item->action = "<a href='news-management/lihat/" . $item->id_berita . "' class='btn'><i
+    //                                                 class='bi bi-search'></i></a>";
+    //         }
+    //     }
+
+    //     return datatables::of($news)->escapeColumns([])->make(true);
+    // }
 
     /**
      * Show the form for creating a new resource.
@@ -144,10 +178,17 @@ class NewManagementController extends Controller
     public function show($id)
     {
         //
-        $news = News::where('id_berita', $id)->first();
-        $formattedDate = Carbon::parse($news->tgl_berita)->locale('id')->translatedFormat('l, d F Y H:i') . ' WIB';
+        $news = DB::table('m_berita_server')->leftJoin('m_category_news', 'm_berita_server.news_category', 'm_category_news.id_category_news')->where('id_news', $id)->select('m_berita_server.*' , 'm_category_news.category_name as category_name')->first();
+        $formattedDate = Carbon::parse($news->created_date)->locale('id')->translatedFormat('l, d F Y H:i') . ' WIB';
         return view('news-management.show', compact('news', 'formattedDate'));
     }
+    // public function showOld($id)
+    // {
+    //     //
+    //     $news = News::where('id_berita', $id)->first();
+    //     $formattedDate = Carbon::parse($news->tgl_berita)->locale('id')->translatedFormat('l, d F Y H:i') . ' WIB';
+    //     return view('news-management.show', compact('news', 'formattedDate'));
+    // }
 
     /**
      * Show the form for editing the specified resource.

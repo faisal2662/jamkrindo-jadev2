@@ -72,7 +72,7 @@
                                     @if (Session::has('success'))
                                         <div class="alert alert-success alert-dismissible fade text-center  show mb-4"
                                             role="alert">
-                                            {{ session('success') }} <a href="route('login-customer')"> login</a>
+                                            {{ session('success') }} <a href="{{ route('login-customer') }}"> login</a>
                                             <button type="button" class="btn-close" data-bs-dismiss="alert"
                                                 aria-label="Close"></button>
                                         </div>
@@ -404,51 +404,51 @@
                 password1.setAttribute('type', 'password');
             }
         })
-        // $('.next').on('click', function(e) {
-        //     let next = false;
-        //     $('#customer').find(':input[required]').each(function(e) {
-
-        //         if ($(this).val() === '') {
-        //             $('#alert').hide()
-        //             $('#alert').show()
-        //         } else {
-        //             next = true;
-
-        //         }
-
-        //     });
-
-        //     if (next) {
-        //         $('#customer').fadeOut(1000).hide();
-        //         $('#dataUsaha').fadeIn().show();
-        //         $('.next').fadeOut().hide();
-        //         $('#back').fadeIn().show();
-        //         $('.save').fadeIn().show();
-
-        //     }
-        // });
         $('.next').on('click', function(e) {
-            e.preventDefault(); // Mencegah aksi default tombol
+            let next = false;
+            $('#customer').find(':input[required]').each(function(e) {
 
-            let next = true; // Asumsikan valid
-            $('#customer').find(':input[required]').each(function() {
                 if ($(this).val() === '') {
-                    $('#alert').show();
-                    next = false; // Jika ada input kosong, set next menjadi false
-                    return false; // Hentikan iterasi
+                    $('#alert').hide()
+                    $('#alert').show()
                 } else {
-                    $('#alert').hide();
+                    next = true;
+
                 }
+
             });
 
             if (next) {
-                $('#customer').fadeOut(, function() {
-                    $('#dataUsaha').fadeIn();
-                });
-                $('.next').fadeOut();
-                $('#back, .save').fadeIn();
+                $('#customer').fadeOut(1000).hide();
+                $('#dataUsaha').fadeIn().show();
+                $('.next').fadeOut().hide();
+                $('#back').fadeIn().show();
+                $('.save').fadeIn().show();
+
             }
         });
+        // $('.next').on('click', function(e) {
+        //     e.preventDefault(); // Mencegah aksi default tombol
+
+        //     let next = true; // Asumsikan valid
+        //     $('#customer').find(':input[required]').each(function() {
+        //         if ($(this).val() === '') {
+        //             $('#alert').show();
+        //             next = false; // Jika ada input kosong, set next menjadi false
+        //             return false; // Hentikan iterasi
+        //         } else {
+        //             $('#alert').hide();
+        //         }
+        //     });
+
+        //     if (next) {
+        //         $('#customer').fadeOut();
+        //             $('#dataUsaha').fadeIn();
+        //         // });
+        //         $('.next').fadeOut();
+        //         $('#back, .save').fadeIn();
+        //     }
+        // });
 
 
         $('#back').on('click', function(e) {

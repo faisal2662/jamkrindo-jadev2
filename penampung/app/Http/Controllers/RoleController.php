@@ -147,41 +147,46 @@ class RoleController extends Controller
             ],
             [
                 'id_menu' => 23,
-                'menu' => 'Service IJP003',
+                'menu' => 'serice SPD001',
                 'type' => 'SUB_MENU',
             ],
             [
                 'id_menu' => 24,
-                'menu' => 'Service KLD001',
+                'menu' => 'Service IJP003',
                 'type' => 'SUB_MENU',
             ],
             [
                 'id_menu' => 25,
-                'menu' => 'Service PR001',
+                'menu' => 'Service KLD001',
                 'type' => 'SUB_MENU',
             ],
             [
                 'id_menu' => 26,
-                'menu' => 'Service PR004',
+                'menu' => 'Service PR001',
                 'type' => 'SUB_MENU',
             ],
             [
                 'id_menu' => 27,
-                'menu' => 'Service SBR002',
+                'menu' => 'Service PR004',
                 'type' => 'SUB_MENU',
             ],
             [
                 'id_menu' => 28,
-                'menu' => 'Service PDR008',
+                'menu' => 'Service SBR002',
                 'type' => 'SUB_MENU',
             ],
             [
                 'id_menu' => 29,
+                'menu' => 'Service PDR008',
+                'type' => 'SUB_MENU',
+            ],
+            [
+                'id_menu' => 30,
                 'menu' => 'SMTP',
                 'type' => 'MENU',
             ],
             [
-                'id_menu' => 30,
+                'id_menu' => 31,
                 'menu' => 'Audit Trail',
                 'type' => 'MENU',
             ],

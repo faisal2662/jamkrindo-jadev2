@@ -116,25 +116,87 @@
                 <hr style="border : 1px dashed;">
                 <div class="row mb-2">
                     <div class="row">
-                        <div class="col"><span class="label">Created By : </span> {{$user->created_by}} </div>
-                        <div class="col"><span class="label">Updated By : </span> {{$user->updated_by}} </div>
-                        <div class="col"><span class="label">Deleted By : </span> {{$user->deleted_by}} </div>
+                        <div class="col"><span class="label">Created By : </span> {{ $user->created_by }} </div>
+                        <div class="col"><span class="label">Updated By : </span> {{ $user->updated_by }} </div>
+                        <div class="col"><span class="label">Deleted By : </span> {{ $user->deleted_by }} </div>
                     </div>
                     <div class="row">
-                        <div class="col"><span class="label">Created Date : </span> {{ Carbon\Carbon::parse($user->created_date)->translatedFormat('l, d F Y') ?? '-' }} </div>
-                        <div class="col"><span class="label">Updated By : </span> {{ Carbon\Carbon::parse($user->updated_date)->translatedFormat('l, d F Y') ?? '-' }}  </div>
-                        <div class="col"><span class="label">Deleted By : </span> {{ Carbon\Carbon::parse($user->deleted_date)->translatedFormat('l, d F Y') ?? '-' }} </div>
+                        <div class="col"><span class="label">Created Date : </span>
+                            {{ Carbon\Carbon::parse($user->created_date)->translatedFormat('l, d F Y') ?? '-' }} </div>
+                        <div class="col"><span class="label">Updated By : </span>
+                            {{ Carbon\Carbon::parse($user->updated_date)->translatedFormat('l, d F Y') ?? '-' }} </div>
+                        <div class="col"><span class="label">Deleted By : </span>
+                            {{ Carbon\Carbon::parse($user->deleted_date)->translatedFormat('l, d F Y') ?? '-' }} </div>
 
                     </div>
                 </div>
             </div>
-            {{-- <div class="col-2">
-                <div class=" mb-2 ">
-                    <a href="{{ route('user-manager.index') }}" class="btn btn-warning btn-sm"><i
-                            class="bi bi-arrow-left-short"></i>
-                        Edit</a>
-                </div>
-            </div> --}}
+
         </div>
     </section>
+     <br>
+    @if (auth()->user()->id_role == 1)
+        <section class="profile">
+            <div class="row bg-white p-4">
+                <h5 class="card-title">Log Login</h5>
+                <div class="table-responsive">
+                    <table class="table" id="table-log" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>User</th>
+                                <th>Created Date</th>
+                                <th>Browser</th>
+                                <th>Platform</th>
+                                <th>Device</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        @section('script')
+            <script>
+                $(document).ready(function() {
+                    reloadData();
+                });
+
+                function reloadData() {
+                    var table = new DataTable('#table-log', {
+                        destroy: true,
+                        processing: true,
+                        serverSide: true,
+                        ajax: {
+                            url: "{{ route('user-manager.getLogUser') }}",
+                            type: 'GET',
+                            data: {
+                                id_user: '{{ $user->kd_user }}'
+                            },
+                        },
+                        columns: [{
+                                data: 'no'
+                            },
+                            {
+                                data: 'nama_user'
+                            },
+                            {
+                                data: 'tanggal'
+                            },
+                            {
+                                data: 'browser'
+                            },
+                            {
+                                data: 'platform'
+                            },
+                            {
+                                data: 'device'
+                            },
+
+                        ]
+                    });
+                }
+            </script>
+        @stop
+    @endif
 @endsection

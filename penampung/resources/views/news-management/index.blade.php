@@ -18,7 +18,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        
+
 
                         <div class="col align-self-end">
 
@@ -98,13 +98,13 @@
                     data: 'no'
                 },
                 {
-                    data: 'judul_berita'
+                    data: 'news_title'
                 },
                 {
                     data: 'tgl_upload'
                 },
                 {
-                    data: 'status_berita'
+                    data: 'status'
                 },
                 {
                     data: 'action'

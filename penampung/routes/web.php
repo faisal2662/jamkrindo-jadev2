@@ -136,12 +136,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/tambah', [UserManagementController::class, 'store'])->name('save');
         Route::post('/export-pdf', [UserManagementController::class, 'cetakPdf'])->name('pdf');
         Route::post('/export-excel', [UserManagementController::class, 'cetakExcel'])->name('excel');
-
         Route::get('/edit/{id}', [UserManagementController::class, 'edit'])->name('edit');
         Route::post('/edit/{id}', [UserManagementController::class, 'update'])->name('update');
         Route::get('/delete/{id}', [UserManagementController::class, 'destroy'])->name('delete');
         Route::get('/page-get-api', [UserManagementController::class, 'pageApi'])->name('get-api');
         Route::get('/get-api', [UserManagementController::class, 'getApi'])->name('getApi');
+        Route::get('/get-log-user', [UserManagementController::class, 'getLoguser'])->name('getLogUser');
         Route::get('/get-log', [UserManagementController::class, 'getLog'])->name('getLog');
         Route::post('/sync-data', [UserManagementController::class, 'getApi'])->name('user-sync');
         Route::get('/lastsync', [UserManagementController::class, 'lastSync'])->name('last-sync');
@@ -215,6 +215,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/get-data-kota/{id}', [CustomerManagementController::class, 'getDataKota'])->name('getDataKota');
         Route::post('/submit', [CustomerManagementController::class, 'submit'])->name('submit');
         Route::post('/get-log', [CustomerManagementController::class, 'getLogEdit'])->name('get_log');
+        Route::get('/get-login-customer', [CustomerManagementController::class, 'getLogCustomer'])->name('get_log_customer');
         Route::post('/get-log-detail', [CustomerManagementController::class, 'getLogDetail'])->name('get_log_detail');
         Route::post('/approve', [CustomerManagementController::class, 'approve'])->name('approve');
         Route::post('/reset-password', [CustomerManagementController::class, 'resetPassword'])->name('reset-password');
@@ -283,6 +284,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/volume-perjanjian-pdf', [ReportDWHController::class, 'getVolumePenjaminanPdf'])->name('dwh.volume.penjaminan.pdf');
             Route::get('/volume-perjanjian-excel', [ReportDWHController::class, 'getVolumePenjaminanExcel'])->name('dwh.volume.penjaminan.excel');
             Route::post('/volume-perjanjian/data', [ReportDWHController::class, 'getVolumePenjaminan'])->name('dwh.volumepenjaminan.getData');
+            Route::get('/service-spd', [ReportDWHController::class, 'serviceSPD'])->name('dwh.servicespd');
             Route::get('/service-ijp', [ReportDWHController::class, 'serviceIJP'])->name('dwh.serviceijp');
             Route::get('/service-ijp-pdf', [ReportDWHController::class, 'serviceIJPPdf'])->name('dwh.serviceijp.pdf');
             Route::get('/service-ijp-excel', [ReportDWHController::class, 'serviceIJPExcel'])->name('dwh.serviceijp.excel');

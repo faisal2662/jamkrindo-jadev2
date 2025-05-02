@@ -138,8 +138,24 @@ class UserManagementController extends Controller
     }
 
 
+    public function getLoguser(Request $request){
+
+        $log = DB::table('t_log_user')->join('m_users', 't_log_user.kd_user', 'm_users.kd_user')->where('t_log_user.is_delete', 'N')->where('t_log_user.kd_user', $request->id_user)->select('t_log_user.*', 'm_users.nm_user')->orderBy('t_log_user.created_date', 'desc')->get();
+
+        $no =1;
+
+        foreach ($log as $data) {
+           $data->no = $no++;
+
+            $data->nama_user = $data->nm_user;
+            $data->tanggal =  $data->created_date  ?  Carbon::parse($data->created_date)->translatedFormat('l, d F Y') : '-';
+        }
+
+        return datatables::of($log)->escapecolumns([])->make(true);
+
+    }
     public function getLog(Request $request){
-        $log = DB::table('t_log_user')->join('m_users', 't_log_user.kd_user', 'm_users.kd_user')->where('t_Log_user.is_delete', 'N')->where('t_log_user.kd_user', auth()->user()->kd_user)->get();
+        $log = DB::table('t_log_user')->join('m_users', 't_log_user.kd_user', 'm_users.kd_user')->where('t_log_user.is_delete', 'N')->where('t_log_user.kd_user', auth()->user()->kd_user)->select('t_log_user.*', 'm_users.nm_user')->orderBy('t_log_user.created_date', 'desc')->get();
 
         $no =1;
 

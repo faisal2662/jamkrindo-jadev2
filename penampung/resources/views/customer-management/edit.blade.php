@@ -42,7 +42,8 @@
             @endif
 
             <div class="tab-pane fade show active profile-overview">
-                <div class="float-end"><span class="badge bg-warning" onclick="resetPassword({{$customer->kd_customer}})" style="cursor: pointer;"><i class="bi bi-arrow-counterclockwise"></i> Reset Password</span></div>
+                <div class="float-end"><span class="badge bg-warning" onclick="resetPassword({{ $customer->kd_customer }})"
+                        style="cursor: pointer;"><i class="bi bi-arrow-counterclockwise"></i> Reset Password</span></div>
 
                 <h5 class="card-title">Edit Customer</h5>
                 <form method="POST" id="cust-edit" action="{{ route('customer-manager.submit') }}"
@@ -100,7 +101,8 @@
                             <select name="status_customer" id="status_customer" class="form-control">
                                 <option value="" disabled selected>Pilih Status</option>
                                 <option @if ($customer->status_customer == 'Active') selected @endif value="Active">Active</option>
-                                <option @if ($customer->status_customer == 'Inactive') selected @endif value="Inactive">Inactive</option>
+                                <option @if ($customer->status_customer == 'Inactive') selected @endif value="Inactive">Inactive
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -494,51 +496,50 @@
             })
         })
 
-    function resetPassword(id){
-        $('#confirm-reset').modal('show');
-        $('#btn-confirm-reset').on('click', function(){
+        function resetPassword(id) {
+            $('#confirm-reset').modal('show');
+            $('#btn-confirm-reset').on('click', function() {
 
-            $.ajax({
-                url: "{{route('customer-manager.reset-password')}}",
-                type: "POST",
-                data:{
-                    _token: "{{csrf_token()}}",
-                    kd_customer: id,
-                },
-                success: function(res){
-                    console.log(res)
-                    showAlert('Reset Berhasil', 'primary')
-                    $('#confirm-reset').modal('hide');
-                },
-                error: function(res)
-                {
-                    alert('terjadi error : ' + res);
-                    $('#confirm-reset').modal('hide');
-            }
-        })
-    })
+                $.ajax({
+                    url: "{{ route('customer-manager.reset-password') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        kd_customer: id,
+                    },
+                    success: function(res) {
+                        console.log(res)
+                        showAlert('Reset Berhasil', 'primary')
+                        $('#confirm-reset').modal('hide');
+                    },
+                    error: function(res) {
+                        alert('terjadi error : ' + res);
+                        $('#confirm-reset').modal('hide');
+                    }
+                })
+            })
 
-    }
+        }
 
-    function showAlert(message, type = 'danger') {
-    // Template alert
-    let alertHTML = `
+        function showAlert(message, type = 'danger') {
+            // Template alert
+            let alertHTML = `
         <div class="alert alert-${type} alert-dismissible fade text-center show" role="alert">
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     `;
 
-    // Tambahkan ke placeholder
-    $('#alert-placeholder').html(alertHTML);
+            // Tambahkan ke placeholder
+            $('#alert-placeholder').html(alertHTML);
 
-    // Opsional: Hapus alert setelah beberapa detik
-    setTimeout(() => {
-        $('.alert').fadeOut('slow', function() {
-            $(this).remove();
-        });
-    }, 5000); // Hapus setelah 5 detik
-}
+            // Opsional: Hapus alert setelah beberapa detik
+            setTimeout(() => {
+                $('.alert').fadeOut('slow', function() {
+                    $(this).remove();
+                });
+            }, 5000); // Hapus setelah 5 detik
+        }
     </script>
     {{-- <script>
         let bussiness = "add";

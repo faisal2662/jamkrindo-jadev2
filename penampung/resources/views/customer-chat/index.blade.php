@@ -164,8 +164,8 @@
         }
 
         /* .chat .chat-history ul li:last-child {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        margin-bottom: 0px
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    } */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                margin-bottom: 0px
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            } */
 
 
         .chat .chat-history .message-data img {
@@ -188,14 +188,14 @@
             display: inline-block;
             position: relative
         }
-        
+
         .chat .chat-history .my-message {
             background: #efefef;
             background: #efefef;
             max-width: 80%;
             text-wrap: wrap;
         }
-        
+
         .chat .chat-history .other-message {
             background: #dcf8c6;
             text-align: right;
@@ -208,7 +208,7 @@
             margin-left: 5px;
 
         }
-        
+
         .chat .chat-message {
             padding: 20px;
             background-color: #f1f1f1;
@@ -340,7 +340,8 @@
 
                             </ul>
                             <div class="input-group">
-                                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#exampleModal">New Chat</button>
+                                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal"
+                                    data-bs-target="#exampleModal">New Chat</button>
                                 <div class="d-grid gap-2">
                                 </div>
                             </div>
@@ -441,32 +442,35 @@
         @else
             <input type="hidden" name="" id="conversationId" value="{{ $percakapan->id }}">
             @endif --}}
-            <input type="hidden" name="" id="conversationId" value="">
+        <input type="hidden" name="" id="conversationId" value="">
         <audio id="notificationSound" src="{{ asset('assets/notif/notif.mp3') }}" preload="auto"></audio>
-        
+
         <!-- Modal -->
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">List Cabang</h1>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">List Cabang</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <select class="form-select form-select-sm" aria-label="Small select example" id="branchId">
+                            <option>Pilih Cabang</option>
+                            @foreach ($getBranch as $dBranch)
+                                <option value="{{ $dBranch->id_cabang }}"
+                                    {{ $dBranch->id_cabang == $branch->id_cabang ? 'selected' : '' }}>
+                                    {{ $dBranch->nm_cabang }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="newConversation">Chat</button>
+                    </div>
                 </div>
-                <div class="modal-body">
-                  <select class="form-select form-select-sm" aria-label="Small select example" id="branchId">
-                      <option>Pilih Cabang</option>
-                      @foreach ($getBranch as $dBranch)
-                          <option value="{{ $dBranch->id_cabang }}" {{ $dBranch->id_cabang == $branch->id_cabang ? 'selected' : '' }}>{{ $dBranch->nm_cabang }}</option>
-                      @endforeach
-                  </select>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary" id="newConversation">Chat</button>
-                </div>
-              </div>
             </div>
-          </div>
+        </div>
     </section>
 
 @section('script')
@@ -616,7 +620,7 @@
                     // $('#generateChat').css('display', 'none')
                 }
                 data.forEach(conversation => {
-                    if(conversation.user){
+                    if (conversation.user) {
                         $('#conversationList').append(`<li class="clearfix p-2 border-bottom list-message" data-name="${conversation.user.nm_user}" data-id="${conversation.id}" data-cabang="${conversation.branch.nm_cabang}">
                                     <div id="is_read_message" class="float-end"></div>
                                     <img src="{{ asset('assets/img/person.png') }}" alt="avatar">
@@ -628,9 +632,8 @@
                                         </div>
                                         <div class="pt-1">
                                         </div>
-                            </li>`
-                        );
-                    }else{
+                            </li>`);
+                    } else {
                         $('#conversationList').append(`<li class="clearfix p-2 border-bottom list-message" data-name="${conversation.branch.nm_cabang}" data-id="${conversation.id}" data-cabang="${conversation.branch.nm_cabang}">
                                     <div id="is_read_message" class="float-end"></div>
                                     <img src="{{ asset('assets/img/person.png') }}" alt="avatar">
@@ -642,8 +645,7 @@
                                         </div>
                                         <div class="pt-1">
                                         </div>
-                            /li>`
-                        );
+                            </li>`);
                     }
                 });
             });
@@ -703,6 +705,11 @@
                 console.log('Notification permission is not granted.');
             }
         }
+        // // Tangkap pesan dari server
+        // eventSource.addEventListener('message', function (event) {
+        //     let data = JSON.parse(event.data);
+        //     console.log(data);
+        // });
 
         function fetchMessages() {
             $.ajax({
@@ -713,7 +720,11 @@
                     userId: '{{ auth()->user()->kd_customer }}'
                 },
                 success: function(res) {
-                    res.messages.forEach(function(data) {
+                    console.log(res);
+                    res.messages.forEach(function(res) {
+                        const data = res;
+                        console.log(data);
+                        console.log(data.user.nm_user);
                         // if (message.id > lastMessageId) {
                         //     appendMessage(message.sender, message.text);
                         //     showNotification(message.sender, message.text);
@@ -734,21 +745,21 @@
                             if (data.type_message == "FILE") {
                                 $('#box-message').append(`
                         <li class="clearfix">
-                             <div class="admin-name">CS - <strong>${data.user.nm_user}</strong></div> 
+                             <div class="admin-name">${data.user.nm_user} - <strong>${data.user.branch_name}</strong></div>
                             <div class="message my-message">    <div class=""> <i class="bi bi-file-earmark-text"></i> <span>Pdf</span></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button> <div class="message-data text-end">
                                 <span class="message-data-time float-end">${waktu(data.created_date)} </span>
                             </div> </div>
                            </li>`);
                             } else if (data.type_message == "IMAGE") {
                                 $('#box-message').append(` <li class="clearfix">
-                                <div class="admin-name">CS - <strong>${data.user.nm_user}</strong></div> 
+                                <div class="admin-name">${data.user.nm_user} - <strong>${data.user.branch_name}</strong></div>
                             <div class="message my-message">    <div class=""><img src="assets/files/${data.message}" onload="Load()" class="img-thumbnail" max-width="50px;"  ></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button>  <div class="message-data text-end">
                                 <span class="message-data-time float-end">${waktu(data.created_date)}</span>
                             </div> </div>
                           </li>`);
                             } else if (data.type_message == "VIDEO") {
                                 $('#box-message').append(` <li class="clearfix">
-                             <div class="admin-name">CS - <strong>${data.user.nm_user}</strong></div> 
+                             <div class="admin-name">${data.user.nm_user} - <strong>${data.user.branch_name}</strong></div>
                             <div class="message my-message">     <div class=""><video style="max-width: 100%; height: auto;" onloadeddata="Load()"   controls ><source src="assets/files/${data.message}"  type="video/mp4"></video></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button> <div class="message-data text-end">
                                 <span class="message-data-time ">${waktu(data.created_date)}</span>
                             </div> </div>
@@ -756,7 +767,7 @@
                             } else {
                                 $('#box-message').append(
                                     ` <li class="clearfix">
-                                <div class="admin-name">CS - <strong>${data.user.nm_user}</strong></div> 
+                                <div class="admin-name">${data.user.nm_user} - <strong>${data.user.branch_name}</strong></div>
                             <div class="message my-message"><pre>${data.message} </pre> <div class="message-data text-end">
                                 <span class="message-data-time ">${waktu(data.created_date)}</span>
                             </div></div>
@@ -867,8 +878,8 @@
             $.get(`customer/conversations/${conversationId}/messages`, function(data) {
                 $('#box-message').empty();
                 data.forEach(message => {
-                    console.log(message.length);
-                    
+                    console.log(message);
+
                     let dateNow = tanggal(message.created_date);
                     // console.log(tanggal(message.created_date))
                     if (dateNow !== lastDate) {
@@ -889,7 +900,7 @@
 
                         lastDate = dateNow;
                     }
-                    
+
                     let is_read = '<i class="bi bi-eye"></i>';
                     if (message.is_read == 'FALSE') {
                         is_read = '<i class="bi bi-eye-slash"></i>'
@@ -918,7 +929,7 @@
                             if (message.user) {
                                 $('#box-message').append(
                                     ` <li class="clearfix">
-                                    <div class="admin-name">${message.user.nm_user} - <strong>${message.user.cabang.nm_cabang}</strong></div> 
+                                    <div class="admin-name">${message.user.nm_user} - <strong>${message.user.branch_name}</strong></div>
                                 <div class="message my-message"><pre>${message.message} </pre> <div class="message-data text-end">
                                     <span class="message-data-time ">${waktu(message.created_date)} </span>
                                 </div></div>
@@ -926,7 +937,7 @@
                             } else {
                                 $('#box-message').append(
                                     ` <li class="clearfix">
-                                    <div class="admin-name">CS - <strong>Pesan Otomatis</strong></div> 
+                                    <div class="admin-name">CS - <strong>Pesan Otomatis</strong></div>
                                 <div class="message my-message"><pre>${message.message} </pre> <div class="message-data text-end">
                                     <span class="message-data-time ">${waktu(message.created_date)} </span>
                                 </div></div>
@@ -942,7 +953,7 @@
                              <div class="message other-message float-end" >    <div class=""> <i class="bi bi-file-earmark-text"></i> <span> Dokumen</span></div><button onclick="downloadBtn('${message.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button> <div class="message-data text-end" >
                                 <span class="message-data-time" >${waktu(message.created_date)}  ${is_read}</span>
                             </div></div>
-                             
+
                           </li> `);
                         } else if (message.type_message == "IMAGE") {
                             $('#box-message').append(`
@@ -950,7 +961,7 @@
                         <div class="message other-message float-end">
                              <div class=""><img src="assets/files/${message.message}" class="img-thumbnail" max-width="50px;" onload="Load()" ></div><button onclick="downloadBtn('${message.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button>
                             <div class="message-data text-end">
-                                <span class="message-data-time">${nowTime()}  ${is_read}</span> 
+                                <span class="message-data-time">${nowTime()}  ${is_read}</span>
                             </div>
                         </div>
                     </li>`);
@@ -960,7 +971,7 @@
                              <div class="message other-message float-end" >  <div class=""><video style="max-width: 100%; height: auto;" onloadeddata="Load()" controls ><source src="assets/files/${message.message}"    type="video/mp4"></video></div><button onclick="downloadBtn('${message.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button><div class="message-data text-end" >
                                 <span class="message-data-time" >${waktu(message.created_date)}  ${is_read}</span>
                             </div></div>
-                              
+
                           </li> `);
                         } else {
                             $('#box-message').append(`
@@ -968,14 +979,17 @@
                              <div class="message other-message float-end" ><pre>${message.message} </pre><div class="message-data text-end" >
                                 <span class="message-data-time" >${waktu(message.created_date)}  ${is_read}</span>
                             </div></div>
-                              
+
                           </li> `);
                         }
                     }
-                    $('.loading').hide()
+
                     $('.chat-history').scrollTop($('#box-message').height());
                 });
 
+            }).always(function() {
+                $('.loading').hide()
+                console.log('Request selesai (berhasil/gagal).');
             });
         }
 
@@ -1057,7 +1071,7 @@
                              <div class="message other-message float-end" >    <div class=""> <i class="bi bi-file-earmark-text"></i> <span>Pdf</span></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button>   <div class="message-data text-end" >
                                 <span class="message-data-time" >${nowTime()}  <i class="bi bi-eye-slash"></i></span>
                             </div></div>
-                            
+
                           </li> `);
                     } else if (file == "IMAGE") {
 
@@ -1076,7 +1090,7 @@
                              <div class="message other-message float-end" >  <div class=""><video style="max-width: 100%; height: auto;" onloadeddata="Load()"  controls ><source src="assets/files/${data.message}"  type="video/mp4"></video></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button> <div class="message-data text-end" >
                                 <span class="message-data-time" >${nowTime()}  <i class="bi bi-eye-slash"></i></span>
                             </div></div>
-                             
+
                           </li> `);
                     } else {
                         $('#box-message').append(`
@@ -1084,7 +1098,7 @@
                              <div class="message other-message float-end" > ${data.message} <div class="message-data text-end" >
                                 <span class="message-data-time" >${nowTime()}  <i class="bi bi-eye-slash"></i></span>
                             </div></div>
-                              
+
                           </li> `);
                     }
 
@@ -1107,11 +1121,13 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+            // let eventSource = new EventSource('/customer/fetch-messages');
+
             loadConversations();
-            //    console.log(conversationId) 
+            //    console.log(conversationId)
             setInterval(updateElapsedTime, 5000);
-            
-            loadMessages(conversationId);
+
+
             $(document).on('click', '.list-message', function() {
                 $('.list-message').removeClass('bg-conversation')
                 currentConversationId = $(this).data('id');
@@ -1127,7 +1143,7 @@
 
                 const conversationId = $('#conversationId').val();
                 const message = $('#messageInput').val();
-                
+
                 const files = $('#document')[0].files
                 const imageFiles = $('#gambarin')[0].files;
                 const videoFiles = $('#video')[0].files;
@@ -1188,7 +1204,7 @@
                     if (data) {
                         $('#box-message').append(
                             ` <li class="clearfix">
-                                    <div class="admin-name"><strong>Pesan Otomatis</strong></div> 
+                                    <div class="admin-name"><strong>Pesan Otomatis</strong></div>
                                 <div class="message my-message"><pre>Terima kasih telah menghubungi cs kami, mohon tunggu admin membalas pesan anda </pre> <div class="message-data text-end">
                                     <span class="message-data-time ">${nowTime()} </span>
                                 </div></div>
@@ -1211,9 +1227,11 @@
                     cabangId: branchId,
                     user_id: '{{ auth()->user()->kd_customer }}'
                 }, function(data) {
+                    console.log(data)
                     currentConversationId = data.id;
                     $('#conversationId').val(data.id);
                     $('#exampleModal').modal('hide');
+                    location.reload();
                     loadMessages(currentConversationId);
 
                 });

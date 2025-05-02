@@ -22,7 +22,7 @@
 
                 <div class="row mb-2">
                     <div class="col-lg-3 col-md-4 label">Judul</div>
-                    <div class="col-lg-9 col-md-8">{{ $news->judul_berita }}</div>
+                    <div class="col-lg-9 col-md-8">{{ $news->news_title }}</div>
                 </div>
 
                 <div class="row mb-2">
@@ -33,22 +33,22 @@
                 <div class="row mb-2">
                     <div class="col-lg-3 col-md-4 label">Status</div>
                     <div class="col-lg-9 col-md-8">
-                        @if ($news->status_berita == 'Publish')
-                            <span class="badge bg-success ">{{ $news->status_berita }}</span>
+                        @if ($news->news_status)
+                            <span class="badge bg-success ">Aktif</span>
                         @else
-                            <span class="badge bg-warning ">{{ $news->status_berita }}</span>
+                            <span class="badge bg-warning ">Tidak Aktif</span>
                         @endif
                     </div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-lg-3 col-md-4 label">Gambar</div>
-                    <div class="col-lg-9 col-md-8"><img src="{{ asset('assets/img/news/' . $news->foto_berita) }}"
+                    <div class="col-lg-9 col-md-8"><img src="{{ asset('assets/img/news/' . $news->news_img) }}"
                             width="300px" class="img-thumbnail" alt=""></div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-lg-3 col-md-4 label">Deskripsi Berita</div>
                     <div class="col-lg-9 col-md-8">
-                        {!! $news->isi_berita !!}
+                        {!! $news->news_content !!}
                     </div>
                 </div>
                 <hr style="border : 1px dashed;">

@@ -18,6 +18,9 @@ use PHPMailer\PHPMailer\PHPMailer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Jenssegers\Agent\Agent;
+
+
 
 class LoginCustomerController extends Controller
 {
@@ -171,6 +174,8 @@ class LoginCustomerController extends Controller
     }
     function verifyOtp(Request $request)
     {
+        $agent = new Agent();
+
         $validator = Validator::make($request->all(), [
             'otp_code' => 'required', // Validasi untuk memastikan 6 digit
         ]);
@@ -188,8 +193,13 @@ class LoginCustomerController extends Controller
         $customer = Customer::where('kd_customer', $id)->first();
         if ($otp) {
             Auth::guard('customer')->login($customer);
-            $log = DB::table('t_log_user')->insert(['kd_user' => $customer->kd_customer, 'keterangan' => 'Login Customer', 'created_by' => 'automatic']);
-
+            $log = DB::table('t_log_customer')->insert(['kd_customer' => $customer->kd_customer, 'keterangan' => 'Login', 'created_by' => 'automatic', 'created_date' => date('Y-m-d H:i:s'),
+            'browser_version'   => $agent->version($agent->browser()),
+            'browser'           => $agent->browser(),
+            'ip_address'        => request()->ip(),
+            'platform'          => $agent->platform(),
+            'platform_version'  => $agent->version($agent->platform()),
+            'device'            => $agent->device()]);
             $request->session()->regenerate();
 
             return redirect()->route('dashboard-customer');

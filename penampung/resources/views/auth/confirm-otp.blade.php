@@ -66,6 +66,11 @@
                                        <p class="text-center">Masa Berlaku OTP akan berakhir dalam : <span class="fw-bold" id="countdown"></span> <span id="alert-login" style="display: none;"><a href="{{route('login')}}"> Silahkan Login</a></span></p>
                                     </div>
 
+                                    @if (session('alert'))
+                                        <div class="alert alert-danger">
+                                            {{ session('alert') }}
+                                        </div>
+                                    @endif
                                     @if (session('error'))
                                         <div class="alert alert-danger">
                                             {{ session('error') }}

@@ -79,7 +79,10 @@ class AuthController extends Controller
             'password' => 'required|string',
             'referral_code' => 'nullable',
             'kd_kota' => 'required',
-        ]);
+        ],
+    [
+        'email.unique' => 'Email sudah terdaftar',
+    ]);
 
         $city = City::with('Provinsi')->findOrFail($request->kd_kota);
 
@@ -185,7 +188,7 @@ class AuthController extends Controller
         ]);
 
         $user = Customer::where('email_customer', $request->email_customer)->first();
-        
+
         if (is_null($user)) {
             return response()->json([
                 'status' => 'error',
@@ -284,7 +287,7 @@ class AuthController extends Controller
             ]);
         }
     }
-    
+
     public function logout(Request $request)
     {
         CustomerToken::where([

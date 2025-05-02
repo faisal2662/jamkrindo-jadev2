@@ -364,6 +364,16 @@
                           @if ($rl->id_menu == 23)
                               @if ($rl->can_access == 'Y')
                                   <li>
+                                      <a href="{{ route('dwh.servicespd') }}"
+                                          class="@if (request()->route()->uri == 'branchs-management' || request()->route()->uri == 'branchs-management/lihat/{id}') active @endif">
+                                          <i class="bi bi-circle"></i><span>Service SPD001</span>
+                                      </a>
+                                  </li>
+                              @endif
+                          @endif
+                          @if ($rl->id_menu == 24)
+                              @if ($rl->can_access == 'Y')
+                                  <li>
                                       <a href="{{ route('dwh.serviceijp') }}"
                                           class="@if (request()->route()->uri == 'branchs-management' || request()->route()->uri == 'branchs-management/lihat/{id}') active @endif">
                                           <i class="bi bi-circle"></i><span>Service IJP003</span>
@@ -371,7 +381,7 @@
                                   </li>
                               @endif
                           @endif
-                          @if ($rl->id_menu == 24)
+                          @if ($rl->id_menu == 25)
                               @if ($rl->can_access == 'Y')
                                   <li>
                                       <a href="{{ route('dwh.servicekld') }}"
@@ -381,7 +391,7 @@
                                   </li>
                               @endif
                           @endif
-                          @if ($rl->id_menu == 25)
+                          @if ($rl->id_menu == 26)
                               @if ($rl->can_access == 'Y')
                                   <li>
                                       <a href="{{ route('dwh.servicepr001') }}"
@@ -391,7 +401,7 @@
                                   </li>
                               @endif
                           @endif
-                          @if ($rl->id_menu == 26)
+                          @if ($rl->id_menu == 27)
                               @if ($rl->can_access == 'Y')
                                   <li>
                                       <a href="{{ route('dwh.servicepr004') }}"
@@ -401,7 +411,7 @@
                                   </li>
                               @endif
                           @endif
-                          @if ($rl->id_menu == 27)
+                          @if ($rl->id_menu == 28)
                               @if ($rl->can_access == 'Y')
                                   <li>
                                       <a href="{{ route('dwh.servicesbr002') }}"
@@ -411,7 +421,7 @@
                                   </li>
                               @endif
                           @endif
-                          @if ($rl->id_menu == 28)
+                          @if ($rl->id_menu == 29)
                               @if ($rl->can_access == 'Y')
                                   <li>
                                       <a href="{{ route('dwh.servicepdr008') }}"
@@ -426,7 +436,7 @@
               </li><!-- End Forms Nav -->
 
               @foreach ($role as $rl)
-                  @if ($rl->id_menu == 29)
+                  @if ($rl->id_menu == 30)
                       @if ($rl->can_access == 'Y')
                           <li class="nav-heading">MASTER SMTP</li>
                           <li class="nav-item  @if (request()->route()->uri == 'stmp') active @endif">
@@ -438,7 +448,7 @@
                           </li>
                       @endif
                   @endif
-                  @if ($rl->id_menu == 30)
+                  @if ($rl->id_menu == 31)
                       @if ($rl->can_access == 'Y')
                           <li class="nav-heading">Log</li>
                           <li class="nav-item  @if (request()->route()->uri == 'audit-trail') active @endif">

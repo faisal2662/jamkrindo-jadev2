@@ -149,6 +149,25 @@
                 </table>
             </div>
         </div>
+    </section> <br>
+    <section class="profile">
+        <div class="row bg-white p-4">
+            <h5 class="card-title">Log Login</h5>
+            <div class="table-responsive">
+                <table class="table" id="table-log-login-customer" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>User</th>
+                            <th>Created Date</th>
+                            <th>Browser</th>
+                            <th>Platform</th>
+                            <th>Device</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
     </section>
     <div class="modal fade" id="detail" tabindex="-1" data-bs-backdrop="false">
         <div class="modal-dialog modal-lg">
@@ -157,10 +176,6 @@
                     <h5 class="modal-title">Detail </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-
-
-
-
                 <div class="modal-body" id="dis-edit">
                     <div class="row">
                         <div class="col">
@@ -174,6 +189,15 @@
                             <ul class="list-group" id="list_after">
 
                             </ul>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="fw-bold">Dibuat Oleh</p>
+                            <p id="maker_by"></p>
+                        </div>
+                        <div class="col-6">
+                            <p class="fw-bold">Diappro</p>
                         </div>
                     </div>
                 </div>
@@ -258,6 +282,7 @@
                 }, 7000); // Delay sebelum notifikasi menghilang (dalam milidetik)
             }
             reloadData();
+            reloadDataLogin();
         });
 
 
@@ -369,7 +394,6 @@
                 posisi_name.forEach(function(item) {
                     if (posisi.includes(item)) {
                         userRole = true;
-
                     }
                 });
                 $('#btn-aksi').show();
@@ -465,6 +489,40 @@
                     {
                         data: 'act'
                     }
+                ]
+            });
+        }
+        function reloadDataLogin() {
+            var table = new DataTable('#table-log-login-customer', {
+                destroy: true,
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('customer-manager.get_log_customer') }}",
+                    type: 'GET',
+                    data: {
+                        id_customer: '{{ $customer->kd_customer }}'
+                    },
+                },
+                columns: [{
+                        data: 'no'
+                    },
+                    {
+                        data: 'nama_customer'
+                    },
+                    {
+                        data: 'tanggal'
+                    },
+                    {
+                        data: 'browser'
+                    },
+                    {
+                        data: 'platform'
+                    },
+                    {
+                        data: 'device'
+                    },
+
                 ]
             });
         }
@@ -693,7 +751,7 @@
         //             });
         //
     </script>
-@stop
 
+@stop
 
 @endsection

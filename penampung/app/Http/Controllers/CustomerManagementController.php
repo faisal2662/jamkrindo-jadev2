@@ -53,9 +53,6 @@ class CustomerManagementController extends Controller
         }
 
         $customers = $customers->orderBy('created_date', 'desc')->get();
-        //$customers = Customer::with(['Branch', 'Business'])->where('is_delete', 'N')->orderBy('created_date', 'desc')->get();
-        // $customers = Customer::with(['Branch', 'Business'])->where('kd_cabang', Auth()->user()->branch_code)->where('is_delete', 'N')->orWhere('kd_cabang', null)->get();
-        // return response()->json($customers);
 
         $no = 1;
 
@@ -77,7 +74,7 @@ class CustomerManagementController extends Controller
             }
             $act->no = $no++;
             $status_customer = "<span class=' " . $btn . "'> " . $act->status_customer . "</span>";
-            $act->nama_customer = '<p style="margin-bottom: 5px ;">'. $act->nama_customer .' </p><p style="margin-bottom: 5px ;">'. $status_customer .'  </p> ';
+            $act->nama_customer = '<p style="margin-bottom: 5px ;">' . $act->nama_customer . ' </p><p style="margin-bottom: 5px ;">' . $status_customer . '  </p> ';
             if ($role->can_update == 'Y' && $role->can_delete == 'Y') {
                 $act->action =   "<a href='customers-management/lihat/" . $act->kd_customer . "' class='btn btn-sm'><i
                                                     class='bi bi-search'></i></a>  <a href='customers-management/edit/" . $act->kd_customer . "' class='btn btn-sm'><i class='bi bi-pencil-square'></i></a><button class='btn btn-sm fw-bold' onclick='customerDelete(\"" . $act->kd_customer . "\",\"" . $act->userid_customer . "\")'><i class='bi bi-trash' ></i></button>";
@@ -91,19 +88,33 @@ class CustomerManagementController extends Controller
                                                     class='bi bi-search'></i></a> ";
             }
 
-            $status_perubahan =  DB::table('tb_customer_changed')->where('kd_customer', $act->kd_customer)->where('is_delete','N')->orderBy('updated_date', 'desc')->first();
-            if(!is_null($status_perubahan)){
+            $status_perubahan =  DB::table('tb_customer_changed')->where('kd_customer', $act->kd_customer)->where('is_delete', 'N')->orderBy('updated_date', 'desc')->first();
+            if (!is_null($status_perubahan)) {
 
-                $act->status_perubahan = '<span class="badge ' . $status[$status_perubahan->status_change] .'">' . $status_perubahan->status_change .'</span>' ;
-            }else {
+                $act->status_perubahan = '<span class="badge ' . $status[$status_perubahan->status_change] . '">' . $status_perubahan->status_change . '</span>';
+            } else {
 
                 $act->status_perubahan =  '-';
             }
-
         }
         return datatables::of($customers)->escapecolumns([])->make(true);
     }
+    public function getLogCustomer(Request $request){
 
+        $log = DB::table('t_log_customer')->join('m_customer', 't_log_customer.kd_customer', 'm_customer.kd_customer')->where('t_log_customer.is_delete', 'N')->where('t_log_customer.kd_customer', $request->id_customer)->select('t_log_customer.*', 'm_customer.nama_customer')->orderBy('t_log_customer.created_date', 'desc')->get();
+
+        $no =1;
+
+        foreach ($log as $data) {
+           $data->no = $no++;
+
+            $data->nama_customer = $data->nama_customer;
+            $data->tanggal =  $data->created_date  ?  Carbon::parse($data->created_date)->translatedFormat('l, d F Y') : '-';
+        }
+
+        return datatables::of($log)->escapecolumns([])->make(true);
+
+    }
     public function getDataKota($id)
     {
         $cities = City::where('kd_provinsi', $id)->where('is_delete', 'N')->get();
@@ -234,10 +245,13 @@ class CustomerManagementController extends Controller
             ->select(
                 'tb_customer_changed.*',
                 'maker.nm_user as maker_name',
+                'maker.employee_id as maker_npp',
                 'tb_customer_changed.maker_date as maker_date',
                 'approve.nm_user as approve_name',
+                'approve.employee_id as approve_npp',
                 'tb_customer_changed.approved_date as approve_date',
                 'reject.nm_user as reject_name',
+                'reject.employee_id as reject_npp',
                 'tb_customer_changed.reject_date as reject_date'
             )
             ->where('tb_customer_changed.is_delete', 'N')
@@ -248,13 +262,13 @@ class CustomerManagementController extends Controller
         $no = 1;
         foreach ($get_log as $data) {
             $data->no = $no++;
-            $data->maker = $data->maker_name ?? '-';
+            $data->maker = $data->maker_name ? $data->maker_name . ' - ' .$data->maker_npp : '-';
             $data->maker_date = $data->maker_date ? Carbon::parse($data->maker_date)->translatedFormat('l, d F Y H:i') : '-';
-            $data->approve = $data->approve_name ?? '-';
+            $data->approve = $data->approve_name ? $data->approve_name . ' - ' . $data->approve_npp : '-';
             $data->approve_date = $data->approve_date ? Carbon::parse($data->approve_date)->translatedFormat('l, d F Y H:i') : '-';
-            $data->reject = $data->reject_name ?? '-';
+            $data->reject = $data->reject_name ? $data->reject_name . ' - ' . $data->reject_npp : '-';
             $data->reject_date = $data->reject_date ? Carbon::parse($data->reject_date)->translatedFormat('l, d F Y H:i') : '-';
-            $data->status_perubahan =  DB::table('tb_customer_changed')->where('kd_customer', $data->kd_customer)->where('is_delete','N')->orderBy('updated_date', 'desc')->first()->status_change;
+            $data->status_perubahan =  DB::table('tb_customer_changed')->where('kd_customer', $data->kd_customer)->where('is_delete', 'N')->orderBy('updated_date', 'desc')->first()->status_change;
             // Menentukan status dengan badge
             if ($data->status_change == 'Pending') {
                 $data->status = '<span class="badge bg-warning">' . $data->status_change . '</span>';
@@ -276,7 +290,12 @@ class CustomerManagementController extends Controller
 
     public function getLogDetail(Request $request)
     {
-        $get_log = DB::table('tb_customer_changed')->join('m_customer', 'tb_customer_changed.kd_customer', 'm_customer.kd_customer')->join('m_cabang', 'm_customer.kd_cabang', 'm_cabang.id_cabang')->select('tb_customer_changed.*', 'm_cabang.kd_cabang', 'm_cabang.nm_cabang')->where('id', $request->id)->first();
+        $get_log = DB::table('tb_customer_changed')
+        ->join('m_customer', 'tb_customer_changed.kd_customer', 'm_customer.kd_customer')
+        ->join('m_cabang', 'm_customer.kd_cabang', 'm_cabang.id_cabang')
+        // ->leftJoin('m_users as create', 'tb_custo')
+        ->select('tb_customer_changed.*', 'm_cabang.kd_cabang', 'm_cabang.nm_cabang')
+        ->where('id', $request->id)->first();
 
         return response()->json($get_log, 200);
     }
@@ -549,7 +568,7 @@ class CustomerManagementController extends Controller
 
     public function submitDelete(Request $request)
     {
-        $jabatan = ['Pemimpin', 'Manajer'];
+        $jabatan = ['Pemimpin', 'Staff', 'Staf'];
         $jabatan_name = false; // Inisialisasi dengan false
         foreach ($jabatan as $val) {
             if (strpos(auth()->user()->position_name, $val) !== false) {
@@ -799,20 +818,20 @@ class CustomerManagementController extends Controller
         return view('customer-management.export-excel', compact('customer', 'start', 'end'));
     }
 
-    public function resetPassword(Request $request){
-            $kd_customer = $request->kd_customer;
-            $newPassword= 'Jamkrindo123!';
-            $hashPassword= Hash::make($newPassword);
-            try {
-                $customer = Customer::where('is_delete', 'N')->where('kd_customer', $kd_customer)->first();
-                $customer->password = $hashPassword;
-                $customer->update();
-                return response()->json(['status' => 'success'],200);
-            } catch (\Throwable $th) {
-                //throw $th;
-                return response()->json(['status' => 'gagal : ' . $th->getMessage()],200);
-            }
-
-            // $2y$10$rWUEak8xQkjw3J32kCJjf.vzsdDUhEXh15IP14f/MulQACDvaRKYe
+    public function resetPassword(Request $request)
+    {
+        $kd_customer = $request->kd_customer;
+        $newPassword = 'Jamkrindo123!';
+        $hashPassword = Hash::make($newPassword);
+        try {
+            $customer = Customer::where('is_delete', 'N')->where('kd_customer', $kd_customer)->first();
+            $customer->password = $hashPassword;
+            $customer->update();
+            return response()->json(['status' => 'success'], 200);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json(['status' => 'gagal : ' . $th->getMessage()], 200);
+        }
     }
+    // $2y$10$rWUEak8xQkjw3J32kCJjf.vzsdDUhEXh15IP14f/MulQACDvaRKYe
 }

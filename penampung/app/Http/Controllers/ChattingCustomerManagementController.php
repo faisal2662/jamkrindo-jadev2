@@ -41,12 +41,12 @@ class ChattingCustomerManagementController extends Controller
 
         // foreach ($request->user_ids as $user_id) {
         //     Participant::create([
-        //         'conversation_id' => $conversation->id, 
+        //         'conversation_id' => $conversation->id,
         //         'user_id' => $user_id,
         //     ]);
         // }
         Participant::create([
-            'conversation_id' => $conversation->id, 
+            'conversation_id' => $conversation->id,
             'send_id' => $request->cabang_id,
             'created_by' => Auth::user()->nama_customer,
             'created_date' => date('Y-m-d H:i:s')
@@ -77,7 +77,7 @@ class ChattingCustomerManagementController extends Controller
 
     public function getMessages($conversationId)
     {
-        $messages = Message::with([ 'user.cabang'])->where('conversation_id', $conversationId)->get();
+        $messages = Message::with(['user.cabang'])->where('conversation_id', $conversationId)->get();
 
         return $messages;
         return response()->json($messages);
@@ -140,7 +140,7 @@ class ChattingCustomerManagementController extends Controller
             $file  = $request->file('file');
             $file->move(base_path('../assets/files'),  $filename);
 
-           $message = Message::create([
+            $message = Message::create([
                 'message' => $filename,
                 'type_message' => $request->type,
                 'conversation_id' => $request->conversation_id,
@@ -157,7 +157,7 @@ class ChattingCustomerManagementController extends Controller
             $file  = $request->file('file');
             $file->move(base_path('../assets/files'),  $filename);
 
-             $message = Message::create([
+            $message = Message::create([
                 'message' => $filename,
                 'type_message' => $request->type,
                 'conversation_id' => $request->conversation_id,
@@ -189,15 +189,42 @@ class ChattingCustomerManagementController extends Controller
         return response()->json($result);
     }
 
+
+
     public function fetchMessages(Request $request)
     {
-        // dd(Carbon::now()->subSecond(5));
-        $percakapan = Percakapan::where('kd_customer', $request->userId)->first('receive_id');
+        // // Header SSE
+        // header('Content-Type: text/event-stream');
+        // header('Cache-Control: no-cache');
+        // header('Connection: keep-alive');
+
+        // // Loop untuk mengirimkan pesan secara real-time
+        // while (true) {
+        //     $lastEventId = $request->header('Last-Event-ID', 0);
+        //     // dd(Carbon::now()->subSecond(5));
+
+        //     // // Ambil pesan baru berdasarkan ID terakhir
+        //     // $messages = Chat::where('id', '>', $lastEventId)
+        //     //     ->orderBy('created_at', 'asc')
+        //     //     ->get();
+
+        //     foreach ($messages as $message) {
+        //         echo "id: {$message->id}\n";
+        //         echo "event: message\n";
+        //         echo "data: " . json_encode($message) . "\n\n";
+        //         ob_flush();
+        //         flush();
+        //     }
+
+        //     // Tunda sejenak untuk mengurangi beban server
+        //     sleep(2);
+        // }
+        $percakapanId = Percakapan::where('kd_customer', $request->userId)->pluck('id');
+        // $percakapanCus = Percakapan::where('kd_cabang', $request->cabangId)->pluck('kd_customer');
         // dd($percakapan->receive_id);
-        $messages = Message::with('user')->where('conversation_id', $request->conversationId)->where('send_id', $percakapan->receive_id)->where('created_date', '>', carbon::now()->subSecond(7)) // Mendapatkan pesan terbaru
+        $messages = Message::with('user')->whereIn('conversation_id', $percakapanId)->where('created_date', '>', now()->subSecond(7)) // Mendapatkan pesan terbaru
             ->orderBy('created_date', 'asc')
             ->get();
-
         return response()->json(['messages' => $messages]);
     }
 
@@ -213,20 +240,23 @@ class ChattingCustomerManagementController extends Controller
         return response()->json(['messages' => $messages]);
     }
 
-    public function checkConversation(Request $request){
+    public function checkConversation(Request $request)
+    {
+
         $percakapan = Percakapan::where(['kd_customer' => $request->user_id, 'kd_cabang' => $request->cabangId])->first();
-        if($percakapan){
+        if ($percakapan) {
             return response()->json($percakapan);
-        }else{
-            $wilayah = Branch::with('wilayah')->where('kd_cabang', $request->cabangId)->first();
-    
+        } else {
+            $wilayah = Branch::where('id_cabang', $request->cabangId)->first();
+
+
             $conversation = Percakapan::create([
-                'kd_cabang' => $request->cabang_id,
-                'kd_wilayah' => $wilayah->wilayah->kd_wilayah,
+                'kd_cabang' => $request->cabangId,
+                'kd_wilayah' => $wilayah->kd_wilayah,
                 'kd_customer' => Auth::user()->kd_customer,
                 'created_by' => Auth::user()->nama_customer
             ]);
-    
+
             // foreach ($request->user_ids as $user_id) {
             //     Participant::create([
             //         'conversation_id' => $conversation->id,
@@ -235,9 +265,9 @@ class ChattingCustomerManagementController extends Controller
             // }
             Participant::create([
                 'conversation_id' => $conversation->id,
-                'send_id' => $request->cabang_id,
+                'send_id' => $request->user_id,
                 'created_by' => Auth::user()->nama_customer
-    
+
             ]);
             return response()->json($conversation);
         }

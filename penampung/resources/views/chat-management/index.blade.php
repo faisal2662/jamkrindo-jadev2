@@ -185,7 +185,7 @@
             list-style: none;
             margin-bottom: 30px
         }
-        
+
         .chat .chat-history .message-data img {
             border-radius: 40px;
             width: 40px
@@ -206,14 +206,14 @@
             display: inline-block;
             position: relative
         }
-        
+
         .chat .chat-history .my-message {
             background: #efefef;
             max-width: 80%;
             text-wrap: wrap;
 
         }
-        
+
         .chat .chat-history .other-message {
 
             background: #dcf8c6;
@@ -221,7 +221,7 @@
             max-width: 80%;
             text-wrap: wrap;
         }
-        
+
         .chat .chat-message {
             padding: 20px;
             background-color: #f1f1f1;
@@ -250,7 +250,7 @@
         .float-right {
             float: right
         }
-        
+
         #sendMessage:hover {
             cursor: pointer;
         }
@@ -306,7 +306,6 @@
                 overflow-x: auto
             }
         }
-
     </style>
 @stop
 @section('main')
@@ -424,7 +423,8 @@
                 </div>
             </div>
         </div>
-        <div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background-color:white; padding:20px; border:1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index:1000;">
+        <div id="popup"
+            style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background-color:white; padding:20px; border:1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index:1000;">
             <p>Anda tidak aktif selama beberapa waktu. Apakah Anda masih di sini?</p>
             <button onclick="closePopup()">Ya, saya di sini</button>
         </div>
@@ -654,7 +654,7 @@
 
                                 `   <li class="clearfix list-message" id="tes"
                                     data-name="${conversation.customer.nama_customer}"
-                                    data-img="${conversation.customer.foto_customer}" data-id="${conversation.id}" 
+                                    data-img="${conversation.customer.foto_customer}" data-id="${conversation.id}"
                                     data-cabang="${conversation.branch.nm_cabang}">
                                     <div id="is_read_message" class="float-end"></div>
                                     <div class="currentDay ">${today}</div>
@@ -666,7 +666,7 @@
                                     </div>
                                     <div class="receive" > Penerima : <span class="fw-bold text-success adminReceive" data-id="${receiveId}" >${receive}</span> </div>
                                 </li>`);
-                                
+
                             if (data > 0) {
                                 $(`#tes[data-id="${conversation.id}"] #is_read_message`)
                                     .append(
@@ -733,7 +733,8 @@
             var audio = $('#notificationSound')[0]; // Mengakses elemen audio
             audio.play(); // Memutar suara
         }
-        
+
+        let id= [];
         function fetchMessages() {
             $.ajax({
                 url: 'fetch-messages',
@@ -742,99 +743,108 @@
                     cabangId: '{{ auth()->user()->branch_code }}'
                 },
                 success: function(res) {
-                    // console.log(res)
+                    console.log(res)
                     res.messages.forEach(function(data) {
-                        
-                        playNotificationSound()
-                        var lastMessageTime = new Date().toISOString();
+                        let idMessagge = data.id;
+                        if (!id.some(item => item === idMessagge)) {
+                            playNotificationSound()
+                            var lastMessageTime = new Date().toISOString();
 
-                        const inputConversationId = $('#currentConversationId').val();
+                            const inputConversationId = $('#currentConversationId').val();
 
-                        // onMessageReceived();
-                        // console.log(data);
-                        // console.log(inputConversationId);
-                        if (data.conversation_id == inputConversationId) {
+                            // onMessageReceived();
+                            // console.log(data);
+                            // console.log(inputConversationId);
+                            if (data.conversation_id == inputConversationId) {
 
-                            $.post("{{ route('chat-read') }}", {
-                                conversationId: data.conversation_id,
-                                user_id: '{{ auth()->user()->kd_user }}'
-                            }, function(res) {
-                                if (data.type_message == "FILE") {
-                                    $('#box-message').append(`
+                                $.post("{{ route('chat-read') }}", {
+                                    conversationId: data.conversation_id,
+                                    user_id: '{{ auth()->user()->kd_user }}'
+                                }, function(res) {
+                                    if (data.type_message == "FILE") {
+                                        $('#box-message').append(`
                                     <li class="clearfix">
                                         <div class="message my-message">    <div class=""> <i class="bi bi-file-earmark-text"></i> <span>  Dokumen</span></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button> <div class="message-data text-end">
                                             <span class="message-data-time">${waktu(data.created_date)}  </span>
                                         </div></div>
                                     </li>`);
-                                } else if (data.type_message == "IMAGE") {
-                                    $('#box-message').append(` <li class="clearfix">
+                                    } else if (data.type_message == "IMAGE") {
+                                        $('#box-message').append(` <li class="clearfix">
                                     <div class="message my-message">    <div class=""><img src="{{ asset('assets/files/${data.message}') }}" onload="Load()" class="img-thumbnail" max-width="50px;"  ></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button><div class="message-data text-end">
                                         <span class="message-data-time">${waktu(data.created_date)} </span>
                                     </div></div>
                                     </li>`);
-                                } else if (data.type_message == "VIDEO") {
-                                    $('#box-message').append(` <li class="clearfix">
+                                    } else if (data.type_message == "VIDEO") {
+                                        $('#box-message').append(` <li class="clearfix">
                                         <div class="message my-message">     <div class=""><video style="max-width: 100%; height: auto;" onloadeddata="Load()"   controls ><source src="{{ asset('assets/files/${data.message}') }}"   type="video/mp4"></video></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button><div class="message-data text-end">
                                             <span class="message-data-time">${waktu(data.created_date)}    </span>
                                         </div> </div>
                                     </li>`);
-                                } else {
+                                    } else {
 
-                                    $('#box-message').append(
-                                        ` <li class="clearfix">
+                                        $('#box-message').append(
+                                            ` <li class="clearfix">
                                             <div class="message my-message"><pre>${data.message} </pre> <div class="message-data text-end">
                                                 <span class="message-data-time">${waktu(data.created_date)}  </span>
                                             </div> </div>
                                         </li>`);
-                                }
-                                $('.chat-history').scrollTop($('#box-message').height());
-                            });
-                        } else {
-                            $.post("{{ route('chat-read') }}", {
-                                conversationId: data.conversation_id,
-                                user_id: '{{ auth()->user()->kd_user }}'
+                                    }
+                                    $('.chat-history').scrollTop($('#box-message').height());
+                                });
+                            } else {
+                                $.post("{{ route('chat-read') }}", {
+                                    conversationId: data.conversation_id,
+                                    user_id: '{{ auth()->user()->kd_user }}'
+                                }, function(data) {
+                                    console.log('success');
+                                });
+                            }
+                            // const notif = $('#toast');
+                            $.get('chat/unread-conversation', {
+                                cabangId: '{{ auth()->user()->branch_code }}',
                             }, function(data) {
-                                console.log('success');
+                                console.log(data)
+                                $('#is_read').text(data)
                             });
+                            $('.name-from').text(data.customer.nama_customer);
+                            const toast = $('#toast');
+                            toast.addClass('show');
+                            setTimeout(function() {
+                                toast.removeClass('show');
+                            }, 3000); // Toast will be visible for 3 seconds
+
+                            let conversationList = $(
+                                `#conversationList li[data-id="${data.conversation_id}"]`);
+                            $('#conversationList').prepend(conversationList);
+                            $.get('chat/unread-message', {
+                                conversationId: data.conversation_id,
+                                userId: '{{ auth()->user()->kd_user }}'
+                            }, function(result) {
+                                $(`#conversationList li[data-id="${data.conversation_id}"] #is_read_message`)
+                                    .empty()
+                                // $(`span.count-message[data-ids="${data.conversation_id}"]`).text(result);
+                                $(`#conversationList li[data-id="${data.conversation_id}"] #is_read_message`)
+                                    .append(
+                                        `<span class="badge float-end count-message"  data-ids="${data.conversation}"  style="background-color:#c5f79f;color:black;"> ${result} </span>`
+                                    )
+                                console.log('masuk')
+
+                            });
+
+                            $(`#conversationList li[data-id="${data.conversation_id}"] .time-last`)
+                                .text(
+                                    data
+                                    .created_at);
+                            $(`#conversationList li[data-id="${data.conversation_id}"] .currentDay`)
+                                .text(
+                                    'Hari Ini');
+                            showDesktopNotification(data.message, data.customer.nama_customer);
+
                         }
-                        // const notif = $('#toast');
-                        $.get('chat/unread-conversation', {
-                            cabangId: '{{ auth()->user()->branch_code }}',
-                        }, function(data) {
-                            console.log(data)
-                            $('#is_read').text(data)
-                        });
-                        $('.name-from').text(data.customer.nama_customer);
-                        const toast = $('#toast');
-                        toast.addClass('show');
-                        setTimeout(function() {
-                            toast.removeClass('show');
-                        }, 3000); // Toast will be visible for 3 seconds
-
-                        let conversationList = $(`#conversationList li[data-id="${data.conversation_id}"]`);
-                        $('#conversationList').prepend(conversationList);
-                        $.get('chat/unread-message', {
-                            conversationId: data.conversation_id,
-                            userId: '{{ auth()->user()->kd_user }}'
-                        }, function(result) {
-                            $(`#conversationList li[data-id="${data.conversation_id}"] #is_read_message`)
-                                .empty()
-                            // $(`span.count-message[data-ids="${data.conversation_id}"]`).text(result);
-                            $(`#conversationList li[data-id="${data.conversation_id}"] #is_read_message`)
-                                .append(
-                                    `<span class="badge float-end count-message"  data-ids="${data.conversation}"  style="background-color:#c5f79f;color:black;"> ${result} </span>`
-                                )
-                            console.log('masuk')
-
-                        });
-
-                        $(`#conversationList li[data-id="${data.conversation_id}"] .time-last`).text(
-                            data
-                            .created_at);
-                        $(`#conversationList li[data-id="${data.conversation_id}"] .currentDay`).text(
-                            'Hari Ini');
-                        showDesktopNotification(data.message, data.customer.nama_customers);
-
+                        id.push(idMessagge)
+                         if(id.length > 50){
+                            id =[];
+                         }
                     });
 
                 },
@@ -842,9 +852,9 @@
                     console.error('Error fetching messages!', err);
                 }
             });
-        
+
         }
-      
+
 
         function Load() {
 
@@ -857,7 +867,7 @@
                 var messageTime = new Date(messageElement.attr('data-timestamp'));
                 if (isNaN(messageTime)) {
                     console.error('Invalid timestamp:', messageElement.attr('data-timestamp'));
-                    return; 
+                    return;
                 }
 
                 var now = new Date();
@@ -927,6 +937,7 @@
             $.get(`conversations/${conversationId}/messages`, function(data) {
                 $('#box-message').empty();
                 data.forEach(message => {
+                    // console.log(message);
                     let dateNow = tanggal(message.created_date);
 
                     // Pisahkan string tanggal berdasarkan tanda '-'
@@ -958,7 +969,7 @@
                     if (message.is_read == 'FALSE') {
                         is_read = '<i class="bi bi-eye-slash"></i>'
                     }
-                    
+
                     if (message.status) {
                         if (message.type_message == "FILE") {
                             $('#box-message').append(`
@@ -966,7 +977,7 @@
                              <div class="message other-message float-end" >    <div class=""> <i class="bi bi-file-earmark-text"></i> <span>Pdf</span></div><button onclick="downloadBtn('${message.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button>   <div class="message-data text-end" >
                                 <span class="message-data-time" >${waktu(message.created_date)}  ${is_read}</span>
                             </div></div>
-                           
+
                           </li> `);
                         } else if (message.type_message == "IMAGE") {
                             $('#box-message').append(`
@@ -984,7 +995,7 @@
                                 <div class="message other-message float-end" >  <div class=""><video  style="max-width: 100%; height: auto;" onloadeddata="Load()" controls ><source src="{{ asset('assets/files/${message.message}') }}"   type="video/mp4"></video></div><button onclick="downloadBtn('${message.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button> <div class="message-data text-end" >
                                     <span class="message-data-time" >${waktu(message.created_date)}  ${is_read}</span>
                                 </div></div>
-                                
+
                             </li> `);
                         } else {
                             $('#box-message').append(`
@@ -992,7 +1003,7 @@
                                 <div class="message other-message float-end" ><pre>${message.message} </pre> <div class="message-data text-end" >
                                     <span class="message-data-time" >${waktu(message.created_date)}  ${is_read}</span>
                                 </div></div>
-                                
+
                             </li> `);
                         }
                     } else {
@@ -1109,7 +1120,7 @@
             let formData = {
                 'conversationId': conversation
             };
-            
+
             $.ajax({
                 url: "{{ route('chat-close') }}",
                 type: "POST",
@@ -1123,7 +1134,8 @@
                 },
                 success: function(res) {
 
-                    let message = "Terimakasih telah mengubungi Jamkrindo. \n Silahkan hubungi kembali jika ada pertanyaan yang ingin ditanyakan";
+                    let message =
+                        "Terimakasih telah mengubungi Jamkrindo. \n Silahkan hubungi kembali jika ada pertanyaan yang ingin ditanyakan";
                     $.ajax({
                         url: "{{ route('sendMessage') }}",
                         type: 'POST',
@@ -1147,7 +1159,8 @@
                                                 </div></div>
                                                     </li>`
                             );
-                            $(`.list-message[data-id="${conversation}"] #is_read_message`).empty();
+                            $(`.list-message[data-id="${conversation}"] #is_read_message`)
+                                .empty();
                             $.get('chat/unread-conversation', {
                                 cabangId: '{{ auth()->user()->branch_code }}',
                                 userId: '{{ auth()->user()->kd_customer }}'
@@ -1209,7 +1222,7 @@
                              <div class="message other-message float-end" >    <div class=""> <i class="bi bi-file-earmark-text"></i> <span>  Dokumen</span></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button>   <div class="message-data text-end" >
                                 <span class="message-data-time" >${nowTime()}  <i class="bi bi-eye-slash"></i></span>
                             </div></div>
-                            
+
                           </li> `);
                     } else if (file == "IMAGE") {
 
@@ -1229,7 +1242,7 @@
                              <div class="message other-message float-end" >  <div class=""><video style="max-width: 100%; height: auto;" onloadeddata="Load()"  controls ><source src="assets/files/${data.message}"  type="video/mp4"></video></div><button onclick="downloadBtn('${data.message}')"  style="border:none" id="downloadBtn" class="badge bg-secondary downloadBtn">Unduh File</button> <div class="message-data text-end" >
                                 <span class="message-data-time" >${nowTime()}  <i class="bi bi-eye-slash"></i></span>
                             </div></div>
-                             
+
                           </li> `);
                     } else {
                         $('#box-message').append(`
@@ -1237,7 +1250,7 @@
                              <div class="message other-message float-end" > ${data.message} <div class="message-data text-end" >
                                 <span class="message-data-time" >${nowTime()}  <i class="bi bi-eye-slash"></i></span>
                             </div></div>
-                              
+
                           </li> `);
                     }
 
@@ -1254,7 +1267,7 @@
             });
 
         }
-        
+
         $(document).ready(function() {
             $.ajaxSetup({
                 headers: {
@@ -1283,7 +1296,7 @@
                 currentConversationId = $(this).data('id');
                 $('.loading').show()
                 let adminId = $(this).find('span.adminReceive').data('id')
-                // console.log(adminId) 
+                // console.log(adminId)
                 let list = $(this)
                 let id_user = {{ auth()->user()->kd_user }};
                 let id = true;
@@ -1314,7 +1327,7 @@
                             console.log('masuk')
                             if (confirm('Kamu hanya bisa melihat pesan ini!')) {
                                 $(`.list-message[data-id="${currentConversationId}"] span.adminReceive`)
-                                    .text(data.user.nm_user);
+                                    .text(data.user.nm_user ?? '-');
                                 $(`.list-message[data-id="${currentConversationId}"] span.adminReceive`)
                                     .data("id", data.receive_id);
                                 $('#messageInput').attr('disabled', true)
@@ -1393,7 +1406,7 @@
             });
 
         });
-        
+
         $('#sendMessage').click(function() {
             const message = $('#messageInput').val();
 
@@ -1428,18 +1441,18 @@
                         $('#box-message').append(
 
                             ` <li class="clearfix">
-                                  <div class="message other-message float-end" ><pre>${message} </pre>  <div class="message-data text-end" >
-                                   <span class="message-data-time" >${nowTime()}  <i class="bi bi-eye-slash"></i></span>
-                                            </div></div>
-                                                 </li>`
+                                      <div class="message other-message float-end" ><pre>${message} </pre>  <div class="message-data text-end" >
+                                       <span class="message-data-time" >${nowTime()}  <i class="bi bi-eye-slash"></i></span>
+                                                </div></div>
+                                                     </li>`
                         );
                         $('#messageInput').val('');
 
                         $('.chat-history').scrollTop($('#box-message').height());
                         $(`.list-message[data-id="${currentConversationId}"] #is_read_message`)
-                            .empty()
-                    }
-                });
+                                .empty()
+                        }
+                    });
                 } else if (imageFiles[0] && imageFiles[0].type.startsWith('image/') &&
                     currentConversationId) {
                     uploadFile(imageFiles[0], 'IMAGE', currentConversationId);

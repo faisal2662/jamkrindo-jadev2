@@ -145,15 +145,15 @@
         const password = document.getElementById('password');
         const invalidPassword = document.getElementsByClassName('invalid-password')[0];
         const show = document.getElementById('show');
-        password.addEventListener('keyup', (e) => {
-            const value = e.target.value;
-            if (value.length <= 8) {
-                invalidPassword.style.display = 'block';
-            } else {
-                invalidPassword.style.display = 'none';
+        // password.addEventListener('keyup', (e) => {
+        //     const value = e.target.value;
+        //     if (value.length <= 8) {
+        //         invalidPassword.style.display = 'block';
+        //     } else {
+        //         invalidPassword.style.display = 'none';
 
-            }
-        });
+        //     }
+        // });
 
         show.addEventListener('click', (e) => {
             console.log(password.getAttribute('type'))

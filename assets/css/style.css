@@ -1053,6 +1053,10 @@ h6 {
   color: rgba(1, 41, 112, 0.6);
 }
 
+.profile table{
+  font-size: 13px;
+}
+
 .profile .profile-edit img {
   max-width: 120px;
 }
@@ -1217,6 +1221,10 @@ h6 {
   .error-404 img {
     max-width: 50%;
   }
+}
+
+.btn .btn-sm {
+  font-size: 10px;
 }
 
 /*--------------------------------------------------------------

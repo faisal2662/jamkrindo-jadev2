@@ -54,7 +54,7 @@ class MessageController extends Controller
         }
 
         $customer = Auth::user();
-        
+
         $conversation = Percakapan::where([
                 'kd_customer' => $customer->kd_customer,
                 'kd_cabang' => $customer->kd_cabang,
@@ -83,7 +83,7 @@ class MessageController extends Controller
             $videoExt = ['webm', 'mkv', 'flv', 'avi', 'mov', 'wmv', 'amv', 'mp4', '3gp'];
             $isImage = in_array(strtolower($ext), $imageExt);
             $isVideo = in_array(strtolower($ext), $videoExt);
-            $typeMessage = ($isImage ? "IMAGE" : $isVideo) ? "VIDEO" : "FILE";
+            $typeMessage = $isImage ? "IMAGE" : ($isVideo ? "VIDEO" : "FILE");
             // if ($isVideo) {
             //     $ffmpeg = \FFMpeg\FFMpeg::create();
             //     $video = $ffmpeg->open(base_path('../assets/files')."/".$filename);
@@ -91,7 +91,7 @@ class MessageController extends Controller
             //     $frame->save($name.".jpg");
             // }
         }
-        
+
         $createdDate = date('Y-m-d H:i:s');
         if (!is_null($request->created_date)) {
             $createdDate = date('Y-m-d H:i:s', strtotime($request->created_date));
@@ -107,7 +107,7 @@ class MessageController extends Controller
         ]);
 
         $createdMessage['message'] = $typeMessage == "TEXT" ? $message : url('assets/files/'.$message);
-        
+
         broadcast(new ConversationChatSentEvent(auth()->user(), $createdMessage))->toOthers();
 
         return response()->json([

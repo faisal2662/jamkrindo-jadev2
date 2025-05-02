@@ -204,6 +204,8 @@
             $('#bx-login').hide()
             $('#bx-load').show()
             $('#btn-login').attr('disabled', "")
+
+
             var formData = $(this).serializeArray();
             console.log(formData);
             const npp = formData[1].value
@@ -224,31 +226,33 @@
                 ACCNAME: "jamkrindo",
                 TIMESTAMP: getFormattedDate(),
             };
-            fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(data),
 
-                })
-                .then(function(response) {
-                    return response.json(); // Menangani response sebagai JSON
-                })
-                .then(function(json) {
-                    console.log(json); // Menampilkan hasil JSON di konsol
-                    // console.log(json.HSTATUS);
-                    if (json.HSTATUS == 200) {
-                        form.submit(); // Melanjutkan submit setelah berhasil
-                    } else {
-                        $.post("{{ route('login.cek_data') }}", {
-                            npp: npp,
-                            pswd: pswd,
-                            _token: $('#csrf-token')[0].content
-                        }, function(res) {
-                            console.log(res);
-                            if (res.status == 'success') {
-                                form.submit();
+            $.post("{{ route('login.cek_data') }}", {
+                npp: npp,
+                pswd: pswd,
+                _token: $('#csrf-token')[0].content
+            }, function(res) {
+                console.log(res);
+                if (res.status == 'success') {
+                    form.submit();
+                } else {
+
+                    fetch(url, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(data),
+
+                        })
+                        .then(function(response) {
+                            return response.json(); // Menangani response sebagai JSON
+                        })
+                        .then(function(json) {
+                            console.log(json); // Menampilkan hasil JSON di konsol
+                            // console.log(json.HSTATUS);
+                            if (json.HSTATUS == 200) {
+                                form.submit(); // Melanjutkan submit setelah berhasil
                             } else {
                                 $('#pesan').text(res.message);
                                 $('#alert_api').show('fade');
@@ -260,43 +264,20 @@
                                 $('#bx-load').hide()
                                 $('#bx-login').show()
                                 $('#btn-login').removeAttr('disabled')
-
                             }
+
                         })
-                        $('#bx-load').hide()
-                        $('#bx-login').show()
-                        $('#btn-login').removeAttr('disabled')
+                        .catch(function(error) {
+                            console.error("Error:", error); // Menangani error jika ada
+                        });
 
-                    }
 
-                })
-                .catch(function(error) {
-                    console.error("Error:", error); // Menangani error jika ada
-                });
+                }
+            })
+            $('#bx-load').hide()
+            $('#bx-login').show()
+            $('#btn-login').removeAttr('disabled')
 
-                // $.post("{{ route('login.cek_data') }}", {
-                //     npp: npp,
-                //     pswd: pswd,
-                //     _token: "{{ csrf_token() }}"
-                // }, function(res) {
-                //     // console.log(res);
-                //     if (res.data == 1) {
-
-                //         $('#status_data').val(1)
-
-                //     } else if (res.data == 0) {
-                //         $('#status_data').val(0)
-
-                //         form.submit();
-                //     } else {
-                //         $('#pesan').text('Data anda tidak ada silahkan hubungi Admin')
-                //         $('#alert_api').addClass('show');
-                //         $('#bx-load').hide()
-                //         $('#bx-login').show()
-                //         $('#btn-login').removeAttr('disabled')
-
-                //     }
-                // })
 
 
 

@@ -22,7 +22,6 @@ class Controller extends BaseController
             'before' => json_encode($before),
             'after' => json_encode($after),
             'ip_address' => request()->ip(),
-            'ip_address'        => request()->ip(),
             'browser'           => $agent->browser(),
             'browser_version'   => $agent->version($agent->browser()),
             'platform'          => $agent->platform(),

@@ -13,7 +13,7 @@ class AuditTrailController extends Controller
 {
     //
 
-    public function index()
+     public function index()
     {
         $role = Role::where('id_account', Auth::user()->kd_user)->where('id_menu', 30)->first();
         if(auth()->user()->id_role != 1){
