@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use App\Models\Role;
 use App\Models\AuditTrails;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class AuditTrailController extends Controller
@@ -45,5 +46,21 @@ class AuditTrailController extends Controller
         $audit =AuditTrails::with('user')->where('id_audit_trails',$id)->where('is_delete','N')->first();
 
         return response()->json(['data' => $audit], 200);
+    }
+
+
+    public function loginDatatable(){
+        $user = DB::table('t_log_user')->join('m_users', 't_log_user.kd_user', 'm_users.kd_user')->where('t_log_user.is_delete', 'N')->select('t_log_user.*' , 'm_users.nm_user', 'm_users.branch_name', 'm_users.npp_user')->orderBy('t_log_user.created_date', 'desc')->get();
+
+        $no = 1;
+        foreach ($user as $data) {
+            $data->no = $no++;
+            $data->tanggal = Carbon::parse($data->created_date)->translatedFormat('l, d F Y');
+            // $data->jam = Carbon::parse($data->created_date)->translatedFormat('H:i:s');
+            $data->act = '-';
+            // $data->act = '<button class="btn btn-sm fw-bold" onclick="detail('. $data->id_log_user .')" ><i class="bi bi-search"></i></button>';
+        }
+
+        return Datatables::of($user)->escapecolumns([])->make(true);
     }
 }

@@ -309,6 +309,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/audit-trail', [AuditTrailController::class,'index'])->name('audit-trail.index');
     Route::post('/audit-trail/datatables', [AuditTrailController::class,'datatables'])->name('audit-trail.datatable');
     Route::get('/audit-trail/show/{id}', [AuditTrailController::class,'show'])->name('audit-trail.show');
+    Route::post('/audit-trail/login', [AuditTrailController::class,'loginDatatable'])->name('audit-trail.login');
+
 
     Route::get('/chat', [ChattingManagementController::class, 'index'])->name('chat');
     Route::post('/conversations', [ChattingManagementController::class, 'createConversation'])->name('conversation.create');

@@ -18,10 +18,14 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
+                            <h4>Log User</h4>
                             <div class="col align-self-end">
 
                                 <div class="mb-3 float-end mt-4">
-
+                                    {{-- <button type="button" class="btn btn-primary" id="btn-tambah" data-bs-toggle="modal"
+                                        data-bs-target="#cetak">
+                                        Cetak
+                                    </button> --}}
 
                                 </div>
                             </div>
@@ -50,7 +54,57 @@
                             </tbody>
                         </table>
                         <!-- End Table with stripped rows -->
+                    </div>
+                </div>
 
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <h4>Log Login Admin</h4>
+                            <div class="col align-self-end">
+
+                                <div class="mb-3 float-end mt-4">
+                                    {{-- <button type="button" class="btn btn-primary" id="btn-tambah" data-bs-toggle="modal"
+                                        data-bs-target="#cetak">
+                                        Cetak
+                                    </button> --}}
+
+                                </div>
+                            </div>
+                        </div>
+                        <div id="alert" class="alert text-center alert-success alert-dismissible fade  " role="alert">
+                            <span class="pesan  text-capitalize"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+                        <!-- Table with stripped rows -->
+                        <table class="table datatable table-hover table-striped" id="audit-table-login">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Admin</th>
+                                    <th>NPP</th>
+                                    <th>Keterangan</th>
+                                    <th>Tanggal</th>
+                                    <th>Ip Address</th>
+                                    <th>Platform</th>
+                                    <th>Browser</th>
+                                    {{-- <th>#</th> --}}
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                        <!-- End Table with stripped rows -->
                     </div>
                 </div>
 
@@ -60,8 +114,8 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="detailAuditModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal fade" id="cetak" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-center" id="ubahModalLabel">Detail</h1>
@@ -70,7 +124,22 @@
 
 
                 <div class="modal-body" id="dis-edit">
-                    <h5 id="aksiModal" class="text-center fw-bold"></h5>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="detailAuditModal" tabindex="-1" data-bs-backdrop="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detail </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="dis-edit">
                     <div class="row">
                         <div class="col">
                             <h5>Before</h5>
@@ -85,14 +154,21 @@
                             </ul>
                         </div>
                     </div>
+                    {{-- <div class="row">
+                        <div class="col-6">
+                            <p class="fw-bold">Dibuat Oleh</p>
+                            <p id="maker_by"></p>
+                        </div>
+                        <div class="col-6">
+                            <p class="fw-bold">Diappro</p>
+                        </div>
+                    </div> --}}
                 </div>
+
 
             </div>
         </div>
-
-    </div>
-
-
+    </div><!-- End Large Modal-->
 
     <!-- Modal -->
     <div class="modal fade" id="hapus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -118,9 +194,51 @@
     <script>
         $(document).ready(function() {
             reloadData();
-
+            reloadDataLogin();
         });
 
+
+
+
+        function reloadDataLogin() {
+            var tableLogin = new DataTable('#audit-table-login', {
+                destroy: true,
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('audit-trail.login') }}",
+                    type: 'POST',
+                    data: {
+                        '_token': '{{ csrf_token() }}'
+                    }
+                },
+                columns: [{
+                        data: 'no'
+                    },
+                    {
+                        data: 'nm_user'
+                    },
+                    {
+                        data: 'npp_user'
+                    },
+                    {
+                        data: 'keterangan'
+                    },
+                    {
+                        data: 'tanggal'
+                    },
+                    {
+                        data: 'ip_address'
+                    },
+                    {
+                        data: 'platform'
+                    },
+                    {
+                        data: 'browser'
+                    }
+                ]
+            });
+        };
 
         function reloadData() {
             var table = new DataTable('#audit-table', {
@@ -234,7 +352,7 @@
 
                                 $('#list_after').append(`<li class="list-group-item list-group-item-primary" > <strong> ${mapping[key]  ?? key} </strong> : ${formatTanggal(value) ?? '-'}</li>
                                 `);
-                            }else {
+                            } else {
 
                                 $('#list_after').append(`<li class="list-group-item list-group-item-primary" > <strong> ${mapping[key]  ?? key} </strong> : ${value ?? '-'}</li>
                                 `);
