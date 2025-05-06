@@ -34,8 +34,8 @@
                 @foreach ($audit as $item)
                 <tr>
                     <td> {{$item->created_date}} </td>
-                    <td> {{$item->before}} </td>
-                    <td> {{$item->after}} </td>
+                    <td style="max-width: 200px;"> {{$item->before}} </td>
+                    <td style="max-width: 200px;"> {{$item->after}} </td>
                     <td> {{$item->user->nm_user}} </td>
                     <td> {{$item->user->branch_name}} </td>
                     <td> {{$item->browser}} </td>
