@@ -22,10 +22,10 @@
                             <div class="col align-self-end">
 
                                 <div class="mb-3 float-end mt-4">
-                                    {{-- <button type="button" class="btn btn-primary" id="btn-tambah" data-bs-toggle="modal"
-                                        data-bs-target="#cetak">
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                        data-bs-target="#cetakLogAktivitas1">
                                         Cetak
-                                    </button> --}}
+                                    </button>
 
                                 </div>
                             </div>
@@ -36,7 +36,7 @@
                         </div>
 
                         <!-- Table with stripped rows -->
-                        <table class="table datatable table-hover table-striped" id="audit-table">
+                        <table class="table  table-hover table-striped" id="audit-table">
                             <thead>
                                 <tr>
                                     <th>No.</th>
@@ -72,10 +72,10 @@
                             <div class="col align-self-end">
 
                                 <div class="mb-3 float-end mt-4">
-                                    {{-- <button type="button" class="btn btn-primary" id="btn-tambah" data-bs-toggle="modal"
-                                        data-bs-target="#cetak">
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                        data-bs-target="#cetakLogAdmin1">
                                         Cetak
-                                    </button> --}}
+                                    </button>
 
                                 </div>
                             </div>
@@ -114,22 +114,65 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="cetak" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="cetakLogAktivitas1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 text-center" id="ubahModalLabel">Detail</h1>
+                    <h1 class="modal-title fs-5 text-center" id="cetakLogAktivitas1">Pilh Tanggal</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
 
-                <div class="modal-body" id="dis-edit">
-
+                <div class="modal-body">
+                    <form action="{{ route('audit-trail.export-log-aktivitas') }}" target="_blank" method="get">
+                        <div class="mb-3">
+                            <label for="" class="form-label">Tanggal Awal <span class="text-danger">*</span></label>
+                            <input type="date" name="tanggal_awal" id="tanggal_awal" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="" class="form-label">Tanggal Akhir <span
+                                    class="text-danger">*</span></label>
+                            <input type="date" name="tanggal_akhir" id="tanggal_akhir" class="form-control">
+                        </div>
+                        <button type="submit" name="export" value="pdf" class="btn btn-danger btn-sm"> <i class="bi bi-file-earmark-pdf"></i>
+                            Pdf</button>
+                        <button type="submit" name="export" value="excel" class="btn btn-success btn-sm"><i class="bi bi-filetype-xls"></i>
+                            Excel</button>
+                    </form>
                 </div>
 
             </div>
         </div>
-
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="cetakLogAdmin1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-6 text-center" id="d">Pilih Tanggal</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('audit-trail.export-log-login') }}" method="get" target="_blank">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="" class="form-label">Tanggal Awal <span
+                                    class="text-danger">*</span></label>
+                            <input type="date" name="tanggal_awal" id="tanggal_awal" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="" class="form-label">Tanggal Akhir <span
+                                    class="text-danger">*</span></label>
+                            <input type="date" name="tanggal_akhir" id="tanggal_akhir" class="form-control">
+                        </div>
+                        <button type="submit" name="export" value="pdf" class="btn btn-danger btn-sm"> <i class="bi bi-file-earmark-pdf"></i>
+                            Pdf</button>
+                        <button type="submit" name="export" value="excel" class="btn btn-success btn-sm"><i class="bi bi-filetype-xls"></i>
+                            Excel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="detailAuditModal" tabindex="-1" data-bs-backdrop="false">
@@ -203,8 +246,8 @@
         function reloadDataLogin() {
             var tableLogin = new DataTable('#audit-table-login', {
                 destroy: true,
-                processing: true,
-                serverSide: true,
+                processing: false,
+                serverSide: false,
                 ajax: {
                     url: "{{ route('audit-trail.login') }}",
                     type: 'POST',
@@ -243,8 +286,8 @@
         function reloadData() {
             var table = new DataTable('#audit-table', {
                 destroy: true,
-                processing: true,
-                serverSide: true,
+                processing: false,
+                serverSide: false,
                 ajax: {
                     url: "{{ route('audit-trail.datatable') }}",
                     type: 'POST',
@@ -284,6 +327,8 @@
         function detail(id) {
             $.ajax({
                 url: "{{ route('audit-trail.show', '') }}/" + id,
+                processing: false,
+                serverSide: false,
                 type: 'GET',
                 success: function(data) {
                     console.log(data.data)

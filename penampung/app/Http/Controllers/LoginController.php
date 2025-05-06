@@ -50,11 +50,11 @@ class LoginController extends Controller
         ]);
 
         $user = User::where('npp_user', $credentials['npp_user'])->where('is_delete', 'N')->first();
-        $pass = Hash::check( $request->password,$user->password,);
+        $pass = Hash::check($request->password, $user->password,);
         if ($user && $pass) {
-        //    $ids = $this->generateOtp($user->kd_user);
-            $id = 8;
-            // $id = $ids->id_otps;
+               $ids = $this->generateOtp($user->kd_user);
+            // $id = $user->kd_user;
+            $id = $ids->id_otps;
 
             return redirect()->route('login.confirm', [$id, encrypt($user->kd_user)]);
         } else {
@@ -69,18 +69,19 @@ class LoginController extends Controller
         ])->with('error', 'Login failed! Please check your NPP and password.');;
     }
 
-    public function confirm($id, $kd_user){
+    public function confirm($id, $kd_user)
+    {
         $id_user = decrypt($kd_user);
         $time = Otp::where('id_otps', $id)->first()->expires_at;
         $user = User::where('kd_user', $id_user)->first();
-        if($user->status_data == 'local'){
+        if ($user->status_data == 'local') {
             $emailAddress = $user->email;
-        }else {
+        } else {
             $emailAddress   = $this->decryptssl($user->email, 'P/zqOYfEDWHmQ9/g8PrApw==');
         }
 
+        // return $time;
         return view('auth.confirm-otp', compact('emailAddress', 'user', 'time'));
-
     }
     private function decryptssl($str, $key)
     {
@@ -102,18 +103,18 @@ class LoginController extends Controller
         // Simpan OTP ke database
         $user = User::where('kd_user', $userId)->first();
         $expired = Carbon::now()->addMinutes(30);
-     $otp =   Otp::create([
+        $otp =   Otp::create([
             'user_id' => $userId,
             'otp_code' => $otpCode,
-            'created_by' => $user->nm_user,
+            'created_by' => $user->kd_user,
             'expires_at' => $expired,
         ]);
 
 
         // $emailAddress   = 'amimfaisal2@gmail.com,faisal.drift.3@gmail.com';
-        if($user->status_data == 'local'){
+        if ($user->status_data == 'local') {
             $emailAddress   = $user->email;
-        }else {
+        } else {
             $emailAddress   = $this->decryptssl($user->email, 'P/zqOYfEDWHmQ9/g8PrApw==');
         }
         // $emailAddress   = '';
@@ -195,15 +196,20 @@ class LoginController extends Controller
             ->first();
         $user = User::where('kd_user', $id)->first();
         if (true) {
-        // if ($otp) {
-        Auth::guard('web')->login($user);
-            $log = DB::table('t_log_user')->insert(['kd_user' => $user->kd_user, 'keterangan' => 'Login', 'created_by' => 'automatic', 'created_date' => date('Y-m-d H:i:s'),
-            'browser_version'   => $agent->version($agent->browser()),
-            'browser'           => $agent->browser(),
-            'ip_address'        => request()->ip(),
-            'platform'          => $agent->platform(),
-            'platform_version'  => $agent->version($agent->platform()),
-            'device'            => $agent->device()]);
+            // if ($otp) {
+            Auth::guard('web')->login($user);
+            $log = DB::table('t_log_user')->insert([
+                'kd_user' => $user->kd_user,
+                'keterangan' => 'Login',
+                'created_by' => 'automatic',
+                'created_date' => date('Y-m-d H:i:s'),
+                'browser_version'   => $agent->version($agent->browser()),
+                'browser'           => $agent->browser(),
+                'ip_address'        => request()->ip(),
+                'platform'          => $agent->platform(),
+                'platform_version'  => $agent->version($agent->platform()),
+                'device'            => $agent->device()
+            ]);
 
             $request->session()->regenerate();
 
@@ -232,8 +238,8 @@ class LoginController extends Controller
     public function cekData(Request $request)
     {
         $user = User::where('npp_user', $request->npp)
-        ->whereNotNull('status_data')
-        ->first();
+            ->whereNotNull('status_data')
+            ->first();
         if (is_null($user)) {
             return response()->json(['status' => 'error', 'message' => 'NPP tidak terdaftar']);
         }
