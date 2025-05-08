@@ -297,7 +297,7 @@
                     $notification.fadeOut('slow');
                 }, 7000); // Delay sebelum notifikasi menghilang (dalam milidetik)
             }
-          
+
         });
 
         function reloadData(start = null, end = null) {
@@ -535,6 +535,7 @@
     </script>
 
     <script>
+        // FD550E1EEC33EDCA8F4A6D8318C393FD4E0E1B3A
         function getFormattedDate() {
             const date = new Date();
             const timezoneOffset = -date.getTimezoneOffset(); // Menit perbedaan dari UTC
