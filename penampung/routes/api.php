@@ -43,23 +43,23 @@ Route::prefix('v1')->group(function () {
     Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyOTPForgotPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
-    Route::middleware('auth.mobile')->group(function () {
+    // Route::middleware('auth.mobile')->group(function () {
         Route::delete('/logout', [AuthController::class, 'logout']);
-        
+
         Route::get('/profile', [AuthController::class, 'getProfile'])->name('api.profile');
         Route::post('/profile', [AuthController::class, 'updateProfile'])->name('api.profile.update');
 
         Route::get('/categories', [CategoryProductController::class, 'getCategories']);
         Route::get('/categories/{id}', [CategoryProductController::class, 'getCategory']);
-    
+
         Route::get('/products/{id}', [ProductController::class, 'getProduct']);
-    
+
         Route::get('/news', [NewsController::class, 'getNews']);
         Route::get('/news/{id}', [NewsController::class, 'getNewsDetail']);
 
         Route::get('/messages', [MessageController::class, 'getMessages']);
         Route::post('/messages', [MessageController::class, 'sendMessage']);
-    });
+    // });
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

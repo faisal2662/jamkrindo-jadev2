@@ -37,7 +37,7 @@ class UserManagementController extends Controller
         return view('user-management.index', compact('regions', 'role'));
     }
 
-    public function pageApi(Request $request )
+    public function pageApi(Request $request)
     {
         $role = Role::where('id_account', Auth::user()->kd_user)->where('id_menu', 2)->first();
         $regions = Regional::where('is_delete', 'N')->get();
@@ -45,8 +45,9 @@ class UserManagementController extends Controller
         return view('user-management.page-api', compact('regions', 'role'));
     }
 
-    public function lastSync(){
-        $user = DB::table('m_users')->where('is_delete', 'N')->orderBy('updated_date','desc' )->first();
+    public function lastSync()
+    {
+        $user = DB::table('m_users')->where('is_delete', 'N')->orderBy('updated_date', 'desc')->first();
 
         $last = carbon::parse($user->created_date)->translatedFormat('l, d F Y H:i');
         return response()->json(['data' => $last, 'status' => 'success'], 200);
@@ -71,103 +72,100 @@ class UserManagementController extends Controller
         $kantorWilayah = DB::table('m_wilayah')->where('is_delete', 'N')->pluck('id_kanwil', 'nm_wilayah')->toArray();
         return $kantorCabang;
 
-        $id_menu = ['1', '3', '4', '19','20', '21'];
+        $id_menu = ['1', '3', '4', '19', '20', '21'];
 
-     foreach ($result as $user) {
+        foreach ($result as $user) {
 
-        try {
-            //code...
+            try {
+                //code...
 
-            $get_user = DB::table('m_users')->where('npp_user', $user['EMPLOYEE_ID'])->first();
-            if(!is_null($get_user )){
-                $user['npp_user'] = $user['EMPLOYEE_ID'];
-                DB::table('m_users')->where('npp_user', $user['EMPLOYEE_ID'])->update($user);
-            }else{
-                $user['npp_user'] = $user['EMPLOYEE_ID'];
-                $user['nm_user'] = $user['EMPLOYEE_NAME'];
-                $user['status_user'] = 'Active';
-                $user['nm_perusahaan'] = $user['COMPANY_CODE'];
-                if($user['BRANCH_NAME'] == 'Kantor Pusat'){
-                    $user['id_branch'] = $kantorCabang['Kantor Pusat'];
-                   $id_user =  DB::table('m_users')->insertGetId($user);
-                    foreach ($id_menu as $menu) {
-                        $role = DB::table('t_role')->insert([
-                            'id_account' => $id_user,
-                            'id_menu' => $menu,
-                            'can_access' => 'Y',
-                            'can_update' => 'Y',
-                            'can_delete' => 'Y',
-                        ]);
-                    }
-                }else if(array_key_exists($user['BRANCH_NAME'], $kantorCabang)){
-                    $user['id_branch'] = $kantorCabang[$user['BRANCH_NAME']];
-                    $user['wilayah_perusahaan'] = DB::table('m_cabang')->where('id_cabang', $user['id_branch'])->first()->kd_wilayah;
-                     $id_user =  DB::table('m_users')->insertGetId($user);
-                    foreach ($id_menu as $menu) {
-                        $role = DB::table('t_role')->insert([
-                            'id_account' => $id_user,
-                            'id_menu' => $menu,
-                            'can_access' => 'Y',
-                            'can_update' => 'Y',
-                            'can_delete' => 'Y',
-                        ]);
-                    }
-                }else if(array_key_exists($user['BRANCH_NAME'], $kantorWilayah)){
-                    $user['wilayah_perusahaan'] = $kantorWilayah[$user['BRANCH_NAME']];
-                   $id_user = DB::table('m_users')->insertGetId($user);
-                    foreach ($id_menu as $menu) {
-                        $role = DB::table('t_role')->insert([
-                            'id_account' => $get_user,
-                            'id_menu' => $menu,
-                            'can_access' => 'Y',
-                            'can_update' => 'Y',
-                            'can_delete' => 'Y',
-                        ]);
+                $get_user = DB::table('m_users')->where('npp_user', $user['EMPLOYEE_ID'])->first();
+                if (!is_null($get_user)) {
+                    $user['npp_user'] = $user['EMPLOYEE_ID'];
+                    DB::table('m_users')->where('npp_user', $user['EMPLOYEE_ID'])->update($user);
+                } else {
+                    $user['npp_user'] = $user['EMPLOYEE_ID'];
+                    $user['nm_user'] = $user['EMPLOYEE_NAME'];
+                    $user['status_user'] = 'Active';
+                    $user['nm_perusahaan'] = $user['COMPANY_CODE'];
+                    if ($user['BRANCH_NAME'] == 'Kantor Pusat') {
+                        $user['id_branch'] = $kantorCabang['Kantor Pusat'];
+                        $id_user =  DB::table('m_users')->insertGetId($user);
+                        foreach ($id_menu as $menu) {
+                            $role = DB::table('t_role')->insert([
+                                'id_account' => $id_user,
+                                'id_menu' => $menu,
+                                'can_access' => 'Y',
+                                'can_update' => 'Y',
+                                'can_delete' => 'Y',
+                            ]);
+                        }
+                    } else if (array_key_exists($user['BRANCH_NAME'], $kantorCabang)) {
+                        $user['id_branch'] = $kantorCabang[$user['BRANCH_NAME']];
+                        $user['wilayah_perusahaan'] = DB::table('m_cabang')->where('id_cabang', $user['id_branch'])->first()->kd_wilayah;
+                        $id_user =  DB::table('m_users')->insertGetId($user);
+                        foreach ($id_menu as $menu) {
+                            $role = DB::table('t_role')->insert([
+                                'id_account' => $id_user,
+                                'id_menu' => $menu,
+                                'can_access' => 'Y',
+                                'can_update' => 'Y',
+                                'can_delete' => 'Y',
+                            ]);
+                        }
+                    } else if (array_key_exists($user['BRANCH_NAME'], $kantorWilayah)) {
+                        $user['wilayah_perusahaan'] = $kantorWilayah[$user['BRANCH_NAME']];
+                        $id_user = DB::table('m_users')->insertGetId($user);
+                        foreach ($id_menu as $menu) {
+                            $role = DB::table('t_role')->insert([
+                                'id_account' => $get_user,
+                                'id_menu' => $menu,
+                                'can_access' => 'Y',
+                                'can_update' => 'Y',
+                                'can_delete' => 'Y',
+                            ]);
+                        }
                     }
                 }
-
-
+            } catch (\Throwable $th) {
+                //throw $th;
+                return response()->json(['status' => $th->getMessage()], 500);
             }
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json(['status' => $th->getMessage()], 500);
+            # code...
         }
-        # code...
-     }
-
     }
 
 
-    public function getLoguser(Request $request){
+    public function getLoguser(Request $request)
+    {
 
         $log = DB::table('t_log_user')->join('m_users', 't_log_user.kd_user', 'm_users.kd_user')->where('t_log_user.is_delete', 'N')->where('t_log_user.kd_user', $request->id_user)->select('t_log_user.*', 'm_users.nm_user')->orderBy('t_log_user.created_date', 'desc')->get();
 
-        $no =1;
+        $no = 1;
 
         foreach ($log as $data) {
-           $data->no = $no++;
+            $data->no = $no++;
 
             $data->nama_user = $data->nm_user;
             $data->tanggal =  $data->created_date  ?  Carbon::parse($data->created_date)->translatedFormat('l, d F Y') : '-';
         }
 
         return datatables::of($log)->escapecolumns([])->make(true);
-
     }
-    public function getLog(Request $request){
+    public function getLog(Request $request)
+    {
         $log = DB::table('t_log_user')->join('m_users', 't_log_user.kd_user', 'm_users.kd_user')->where('t_log_user.is_delete', 'N')->where('t_log_user.kd_user', auth()->user()->kd_user)->select('t_log_user.*', 'm_users.nm_user')->orderBy('t_log_user.created_date', 'desc')->get();
 
-        $no =1;
+        $no = 1;
 
         foreach ($log as $data) {
-           $data->no = $no++;
+            $data->no = $no++;
 
             $data->nama_user = $data->nm_user;
             $data->tanggal = Carbon::parse($data->created_date)->translatedFormat('l, d F Y');
         }
 
         return datatables::of($log)->escapecolumns([])->make(true);
-
     }
 
 
@@ -630,12 +628,12 @@ class UserManagementController extends Controller
     public function getData(Request $request)
     {
         $role = Role::where('id_account', Auth::user()->kd_user)->where('id_menu', 2)->first();
-	    $users = User::with(['wilayah', 'cabang'])->where('is_delete', 'N');
+        $users = User::with(['wilayah', 'cabang'])->where('is_delete', 'N');
 
         if ($request->startDate && $request->endDate) {
             $users->whereBetween('created_date', [$request->startDate, $request->endDate]);
         }
-	    $users = $users->orderBy('created_date', 'desc')->get();
+        $users = $users->orderBy('created_date', 'desc')->get();
         //$users = User::with('wilayah', 'cabang')->where('is_delete', 'N')->orderBy('created_date', 'desc')->get();
         // return response()->json($users);
 
@@ -689,7 +687,7 @@ class UserManagementController extends Controller
         return view('user-management.create', compact('provinsi', 'wilayah'));
     }
 
-      /**
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -762,7 +760,7 @@ class UserManagementController extends Controller
             $user->updated_by = Auth::user()->nm_user;
             $user->save();
 
-	    $newUser = User::orderBy('kd_user', 'desc')->first();
+            $newUser = User::orderBy('kd_user', 'desc')->first();
 
             $menu = [1, 2, 3, 4, 5, 6, 7, 8, 12, 14, 15, 16];
 
@@ -793,10 +791,10 @@ class UserManagementController extends Controller
     {
         //
 
-         $user = user::with('wilayah','cabang', 'kota')->where('kd_user', $id)->first();
-         $user['email'] = $this->decryptssl($user['email'], 'P/zqOYfEDWHmQ9/g8PrApw==');
-         $user['primary_address'] = $this->decryptssl($user['primary_address'], 'P/zqOYfEDWHmQ9/g8PrApw==');
-         $user['primary_phone'] = $this->decryptssl($user['primary_phone'], 'P/zqOYfEDWHmQ9/g8PrApw==');
+        $user = user::with('wilayah', 'cabang', 'kota')->where('kd_user', $id)->first();
+        $user['email'] = $this->decryptssl($user['email'], 'P/zqOYfEDWHmQ9/g8PrApw==');
+        $user['primary_address'] = $this->decryptssl($user['primary_address'], 'P/zqOYfEDWHmQ9/g8PrApw==');
+        $user['primary_phone'] = $this->decryptssl($user['primary_phone'], 'P/zqOYfEDWHmQ9/g8PrApw==');
 
         return view('user-management.show', compact('user'));
     }
@@ -810,6 +808,10 @@ class UserManagementController extends Controller
     public function edit($id)
     {
         $user = User::where('is_delete', 'N')->where('kd_user', $id)->first();
+        $user['email'] = $this->decryptssl($user['email'], 'P/zqOYfEDWHmQ9/g8PrApw==');
+        $user['primary_address'] = $this->decryptssl($user['primary_address'], 'P/zqOYfEDWHmQ9/g8PrApw==');
+        $user['primary_phone'] = $this->decryptssl($user['primary_phone'], 'P/zqOYfEDWHmQ9/g8PrApw==');
+        $user['birthday'] = $this->decryptssl($user['birthday'], 'P/zqOYfEDWHmQ9/g8PrApw==');
 
         return view('user-management.edit', compact('user'));
 
@@ -826,24 +828,24 @@ class UserManagementController extends Controller
     public function update(Request $request, $id)
     {
 
-      $request->validate([
-                'npp_user' => 'required|exists:m_users,npp_user',
-            ]);
+        $request->validate([
+            'npp_user' => 'required|exists:m_users,npp_user',
+        ]);
 
         try {
             $user =  User::where('kd_user', $id)->first();
             // dd($user);
             // $user->kd_user = 'userId1';
-            $user->nm_user = $request->nm_user;
-            $user->npp_user = $request->npp_user;
-            $user->nm_perusahaan = $request->nm_perusahaan;
-            $user->wilayah_perusahaan = $request->wilayah;
-            $user->email = $request->email;
-            $user->status_user = $request->status_user;
-            $user->primary_address = $request->primary_address;
-            $user->primary_phone = $request->primary_phone;
-            $user->primary_city = $request->kota;
-            $user->birthday = $request->birthday;
+            // $user->nm_user = $request->nm_user;
+            // $user->npp_user = $request->npp_user;
+            // $user->nm_perusahaan = $request->nm_perusahaan;
+            // $user->wilayah_perusahaan = $request->wilayah;
+            // $user->email = $request->email;
+            // $user->status_user = $request->status_user;
+            // $user->primary_address = $request->primary_address;
+            // $user->primary_phone = $request->primary_phone;
+            // $user->primary_city = $request->kota;
+            // $user->birthday = $request->birthday;
             // $user->company_code = $request->company_code;
             // $user->management_code = $request->management_code;
             // $user->management_name = $request->management_name;
@@ -859,8 +861,7 @@ class UserManagementController extends Controller
             // $user->position_code = $request->position_code;
             // $user->position_name = $request->position_name;
             // $user->grade_code = $request->grade_code;
-            $user->branch_name = $request->branch_name;
-            $user->branch_code = $request->cabang;
+
             // $user->functional_code = $request->functional_code;
             // $user->functional_name = $request->functional_name;
             // $user->sub_section_code = $request->sub_section_code;
@@ -875,25 +876,70 @@ class UserManagementController extends Controller
             if ($request->id_role) {
                 $user->id_role = $request->id_role;
             }
-            if ($request->password) {
-                $request->validate(
-                    [
-                        'password' => 'required | confirmed',
+            // if ($request->password) {
+            //     $request->validate(
+            //         [
+            //             'password' => 'required | confirmed',
 
-                    ],
-                    [
-                        'password.confirmed' => 'Password tidak sama'
-                    ]
-                );
-                $password = Hash::make($request->password);
-                $user->password = $password;
-            }
+            //         ],
+            //         [
+            //             'password.confirmed' => 'Password tidak sama'
+            //         ]
+            //     );
+            //     $password = Hash::make($request->password);
+            //     $user->password = $password;
+            // }
 
-            $user->updated_by = Auth::user()->nm_user;
+            $user->updated_by = Auth::user()->kd_user;
             $user->update();
-            // dd(
-            //     $request
-            // );
+            if ($request->id_role == '1') {
+                $menu = [1, 2, 3, 4, 5, 6, 7, 8, 12, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+
+                foreach ($menu as $idMenu) {
+                    // Cari role berdasarkan id_account dan id_menu
+                    $role = Role::where('id_account', $id)
+                        ->where('id_menu', $idMenu)
+                        ->first();
+
+                    if (!$role) {
+                        // Jika belum ada, buat baru
+                        $role = new Role();
+                        $role->id_account = $id;
+                        $role->id_menu = $idMenu;
+                    }
+
+                    // Set hak akses
+                    $role->can_access  = 'Y';
+                    $role->can_create  = 'Y';
+                    $role->can_approve = 'Y';
+                    $role->can_update  = 'Y';
+                    $role->update(); // gunakan save() karena bisa insert atau update
+                }
+            } else {
+               
+
+                $menu = [ 2,  5, 6, 7, 8, 12, 14, 15, 16,  22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+                foreach ($menu as $idMenu) {
+                    // Cari role berdasarkan id_account dan id_menu
+                    $role = Role::where('id_account', $id)
+                        ->where('id_menu', $idMenu)
+                        ->first();
+
+                    if (!$role) {
+                        // Jika belum ada, buat baru
+                        $role = new Role();
+                        $role->id_account = $id;
+                        $role->id_menu = $idMenu;
+                    }
+
+                    // Set hak akses
+                    $role->can_access  = 'N';
+                    $role->can_create  = 'N';
+                    $role->can_approve = 'N';
+                    $role->can_update  = 'N';
+                    $role->update(); // gunakan save() karena bisa insert atau update
+                }
+            }
 
             // return response()->json(['status' => 'success'], 200);
             return redirect()->route('user-manager.index')->with('success', 'Ubah data berhasil');
@@ -1038,7 +1084,7 @@ class UserManagementController extends Controller
 
         //$pdf = PDF::loadview('user-management.export-pdf', ['users' => $users, 'start' => $request->start, 'end' => $request->end])->setPaper('A4', 'landscape');
         //return $pdf->download('Admin ' . $request->start . 'to' . $request->end . '.pdf');
-	return view('user-management.export-pdf', ['users' => $users, 'start' => $request->start, 'end' => $request->end]);
+        return view('user-management.export-pdf', ['users' => $users, 'start' => $request->start, 'end' => $request->end]);
     }
 
     public function cetakExcel(Request $request)

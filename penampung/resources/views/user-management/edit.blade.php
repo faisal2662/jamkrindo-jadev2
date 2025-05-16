@@ -84,7 +84,7 @@
                     </div>
                     <div class="row mb-2">
                         <div class="col-lg-3 col-md-4 label">Tanggal Lahir <span class="text-danger"> * </span></div>
-                        <div class="col-lg-9 col-md-8"><input type="date" name="birthday" id="birthday"
+                        <div class="col-lg-9 col-md-8"><input type="text" name="birthday" id="birthday"
                                 class="form-control" value="{{ $user->birthday }}" readonly></div>
                     </div>
                     @if (auth()->user()->id_role == 1)
