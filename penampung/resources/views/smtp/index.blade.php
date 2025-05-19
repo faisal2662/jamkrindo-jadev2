@@ -72,7 +72,7 @@
                                     <div class="row mb-2">
                                         <div class="col-lg-4 col-md-5 label">PASSWORD SMTP <span
                                                 class="text-danger">*</span></div>
-                                        <div class="col-lg-8 col-md-7"><input type="text" name="password_smtp"
+                                        <div class="col-lg-8 col-md-7"><input type="password" name="password_smtp"
                                                 id="" value="{{ $smtp->password_smtp }}" required
                                                 class="form-control"></div>
                                     </div>

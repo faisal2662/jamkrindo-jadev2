@@ -7,9 +7,17 @@
     <title>Laporan Audit Trail Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-</head>
+    <style>
+    @media print {
+        @page {
+            size: landscape;
+        }
+    }
+</style>
+    </head>
 
 <body  onload="window.print(); setTimeout(window.close, 0);">
+{{-- <body  onload="window.print(); setTimeout(window.close, 0);"> --}}
     <div class="container">
 
         <div class="row mt-6">

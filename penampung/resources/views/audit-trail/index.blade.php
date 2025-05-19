@@ -118,12 +118,13 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 text-center" id="cetakLogAktivitas1">Pilh Tanggal</h1>
+                    <h1 class="modal-title fs-5 text-center" id="cetakLogAktivitas1">Cetak Log Aktivitas</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
 
                 <div class="modal-body">
+                    <p>PilihT Tanggal</p>
                     <form action="{{ route('audit-trail.export-log-aktivitas') }}" target="_blank" method="get">
                         <div class="mb-3">
                             <label for="" class="form-label">Tanggal Awal <span class="text-danger">*</span></label>
@@ -149,10 +150,11 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-6 text-center" id="d">Pilih Tanggal</h1>
+                    <h1 class="modal-title fs-6 text-center" id="d">Cetak Log Login</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p>Pilih Tanggal</p>
                     <form action="{{ route('audit-trail.export-log-login') }}" method="get" target="_blank">
                         @csrf
                         <div class="mb-3">
@@ -424,7 +426,7 @@
                                 const isChanged = data_after[key] !== value;
                                 $('#list_before', ).append(
                                     `<li class="list-group-item${isChanged ? ' list-group-item-warning' : ''}">
-                                    <strong>${mapping[key]}</strong> : ${value ?? '-'}
+                                  ${value ?? '-'}
                                 </li>`);
                             }
                         });
@@ -438,7 +440,7 @@
 
                                 $('#list_after').append(
                                     `<li class="list-group-item${isChanged ? ' list-group-item-primary' : ''}">
-                                            <strong>${mapping[key]}</strong> : ${value ?? '-'}
+                                             ${value ?? '-'}
                                             </li>`);
                             }
                         });
