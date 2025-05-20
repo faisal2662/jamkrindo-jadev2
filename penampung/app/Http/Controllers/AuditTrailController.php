@@ -207,17 +207,21 @@ class AuditTrailController extends Controller
             // $before =[];
             // $after= [];
             $audit = $audit->map(function ($item) {
-                // Decode JSON dengan pengecekan validitas
+
+                // Decode JSON
                 $jsonArrayBefore = json_decode($item->before, true);
                 $jsonArrayAfter = json_decode($item->after, true);
 
-                // Jika decode gagal, inisialisasi sebagai array kosong
+                // Pastikan hasil decode adalah array, jika tidak, set kosong
                 $jsonArrayBefore = is_array($jsonArrayBefore) ? $jsonArrayBefore : [];
                 $jsonArrayAfter = is_array($jsonArrayAfter) ? $jsonArrayAfter : [];
 
+                // Filter sebelum hanya yang ada di after
+                $beforeFiltered = array_intersect_key($jsonArrayBefore, $jsonArrayAfter);
+
                 // Ambil hanya value dari JSON, dan filter null
-                $item->before = [array_filter(array_values($jsonArrayBefore), fn($val) => !is_null($val))];
-                $item->after = [array_filter(array_values($jsonArrayAfter), fn($val) => !is_null($val))];
+                $item->before = array_filter(array_values($beforeFiltered), fn($val) => !is_null($val));
+                $item->after = array_filter(array_values($jsonArrayAfter), fn($val) => !is_null($val));
 
                 return $item;
             });
@@ -315,21 +319,26 @@ class AuditTrailController extends Controller
             // header("Cache-Control: private", false);
             return view('audit-trail.export-log-aktivitas-excel', compact('audit', 'start', 'end'));
         } else {
-             $audit = $audit->map(function ($item) {
-                // Decode JSON dengan pengecekan validitas
+            $audit = $audit->map(function ($item) {
+
+                // Decode JSON
                 $jsonArrayBefore = json_decode($item->before, true);
                 $jsonArrayAfter = json_decode($item->after, true);
 
-                // Jika decode gagal, inisialisasi sebagai array kosong
+                // Pastikan hasil decode adalah array, jika tidak, set kosong
                 $jsonArrayBefore = is_array($jsonArrayBefore) ? $jsonArrayBefore : [];
                 $jsonArrayAfter = is_array($jsonArrayAfter) ? $jsonArrayAfter : [];
 
+                // Filter sebelum hanya yang ada di after
+                $beforeFiltered = array_intersect_key($jsonArrayBefore, $jsonArrayAfter);
+
                 // Ambil hanya value dari JSON, dan filter null
-                $item->before = [array_filter(array_values($jsonArrayBefore), fn($val) => !is_null($val))];
-                $item->after = [array_filter(array_values($jsonArrayAfter), fn($val) => !is_null($val))];
+                $item->before = array_filter(array_values($beforeFiltered), fn($val) => !is_null($val));
+                $item->after = array_filter(array_values($jsonArrayAfter), fn($val) => !is_null($val));
 
                 return $item;
             });
+
 
             return view('audit-trail.export-log-aktivitas-pdf', compact('audit', 'start', 'end'));
         }
