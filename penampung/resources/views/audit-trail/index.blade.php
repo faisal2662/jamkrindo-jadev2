@@ -135,9 +135,11 @@
                                     class="text-danger">*</span></label>
                             <input type="date" name="tanggal_akhir" id="tanggal_akhir" class="form-control">
                         </div>
-                        <button type="submit" name="export" value="pdf" class="btn btn-danger btn-sm"> <i class="bi bi-file-earmark-pdf"></i>
+                        <button type="submit" name="export" value="pdf" class="btn btn-danger btn-sm"> <i
+                                class="bi bi-file-earmark-pdf"></i>
                             Pdf</button>
-                        <button type="submit" name="export" value="excel" class="btn btn-success btn-sm"><i class="bi bi-filetype-xls"></i>
+                        <button type="submit" name="export" value="excel" class="btn btn-success btn-sm"><i
+                                class="bi bi-filetype-xls"></i>
                             Excel</button>
                     </form>
                 </div>
@@ -167,9 +169,11 @@
                                     class="text-danger">*</span></label>
                             <input type="date" name="tanggal_akhir" id="tanggal_akhir" class="form-control">
                         </div>
-                        <button type="submit" name="export" value="pdf" class="btn btn-danger btn-sm"> <i class="bi bi-file-earmark-pdf"></i>
+                        <button type="submit" name="export" value="pdf" class="btn btn-danger btn-sm"> <i
+                                class="bi bi-file-earmark-pdf"></i>
                             Pdf</button>
-                        <button type="submit" name="export" value="excel" class="btn btn-success btn-sm"><i class="bi bi-filetype-xls"></i>
+                        <button type="submit" name="export" value="excel" class="btn btn-success btn-sm"><i
+                                class="bi bi-filetype-xls"></i>
                             Excel</button>
                     </form>
                 </div>
@@ -342,7 +346,29 @@
                     // Kosongkan list sebelum menambahkan elemen baru
                     $('#list_before').empty();
                     $('#list_after').empty();
+                    const data_before = [{
+                            "id_menu": "1",
+                            "can_access": "Y",
+                            "can_create": "Y",
+                            "can_delete": "Y",
+                            "can_update": "Y",
+                            "id_account": "4",
+                            "can_approve": "N"
+                        },
+                        // Tambah data lainnya...
+                    ];
 
+                    const data_after = [{
+                            "id_menu": "1",
+                            "can_access": "Y",
+                            "can_create": "N", // contoh perubahan
+                            "can_delete": "Y",
+                            "can_update": "Y",
+                            "id_account": "4",
+                            "can_approve": "N"
+                        },
+                        // Tambah data lainnya...
+                    ];
                     const mapping = {
                         email: "Email",
                         kd_cabang: "Kode Cabang",
@@ -392,7 +418,31 @@
                         deleted_by: "Deleted By",
                         deleted_date: "Deleted Date",
                     }
-                    if (data.data.before == 'null') {
+                    if (data.data.action == 'update_roles') {
+                         Object.entries(data_before).forEach((beforeItem, index) => {
+                            const afterItem = data_after[index];
+
+                            if (!afterItem) return; // Lewati jika tidak ada data pembanding
+
+                            Object.keys(beforeItem).forEach((key) => {
+                                const beforeValue = beforeItem[key];
+                                const afterValue = afterItem[key];
+                                const isChanged = beforeValue !== afterValue;
+
+                                $('#list_before').append(
+                                    `<li class="list-group-item${isChanged ? ' list-group-item-warning' : ''}">
+                    [Menu ${beforeItem.id_menu}] ${key}: ${beforeValue ?? '-'}
+                </li>`
+                                );
+
+                                $('#list_after').append(
+                                    `<li class="list-group-item${isChanged ? ' list-group-item-primary' : ''}">
+                    [Menu ${afterItem.id_menu}] ${key}: ${afterValue ?? '-'}
+                </li>`
+                                );
+                            });
+                        });
+                    }else if (data.data.before == 'null') {
                         // Tampilkan data before
                         Object.entries(data_after).forEach(([key, value]) => {
                             if (key == 'created_date' || key == 'updated_date') {
@@ -419,7 +469,7 @@
                                 `);
                             }
                         });
-                    } else {
+                    }  else {
                         Object.entries(data_before).forEach(([key, value]) => {
                             if (key in data_after) {
                                 // Highlight perbedaan dengan gaya tambahan

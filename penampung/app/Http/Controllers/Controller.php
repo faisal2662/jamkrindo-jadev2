@@ -15,10 +15,16 @@ class Controller extends BaseController
 
     function logAuditTrail($action, $model, $before, $after){
         $agent = new Agent();
+
+    // Tangani jika model berupa objek atau string
+
+        $modelName = is_object($model) ? get_class($model) : (is_string($model) ? $model : 'unknown');
+
+
         AuditTrails::create([
             'kd_user' => auth()->user()->kd_user ?? 0,
             'action' =>$action,
-            'model' => get_class($model),
+            'model' => $modelName,
             'before' => json_encode($before),
             'after' => json_encode($after),
             'ip_address' => request()->ip(),

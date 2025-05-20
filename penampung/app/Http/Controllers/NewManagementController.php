@@ -229,6 +229,7 @@ class NewManagementController extends Controller
                 $news->foto_berita = $filename;
             }
             $dataRequest['foto_berita'] =  $filename;
+          
             $dataOld = json_decode(json_encode($dataLama), true);
             $dataNew = json_decode(json_encode($dataRequest), true);
             $baru =  array_diff_assoc($dataNew, $dataOld); // Nilai di $dataNew yang tidak ada di $dataOld

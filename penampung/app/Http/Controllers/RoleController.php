@@ -226,6 +226,31 @@ class RoleController extends Controller
 
     function save(Request $request)
     {
+        // $idAccount = $request->id_account;
+        // $menuID = $request->menu_id;
+        // $can_access = $request->can_access;
+        // $can_update = $request->can_update;
+        // $can_create = $request->can_create;
+        // $can_delete = $request->can_delete;
+        // $can_approve = $request->can_approve;
+
+        // //Delete Role
+        // Role::where('id_account', $idAccount)->delete();
+
+        // for ($i = 0; $i < count($menuID); $i++) {
+
+        //     $role = new Role;
+        //     $role->id_menu = $menuID[$i];
+        //     $role->id_account = $idAccount;
+        //     $role->can_access = isset($can_access[$menuID[$i]]) ? $can_access[$menuID[$i]] : 'N';
+        //     $role->can_update = isset($can_update[$menuID[$i]]) ? $can_update[$menuID[$i]] : 'N';
+        //     $role->can_delete = isset($can_delete[$menuID[$i]]) ? $can_delete[$menuID[$i]] : 'N';
+        //     $role->can_create = isset($can_create[$menuID[$i]]) ? $can_create[$menuID[$i]] : 'N';
+        //     $role->can_approve = isset($can_approve[$menuID[$i]]) ? $can_approve[$menuID[$i]] : 'N';
+        //     $role->save();
+        // }
+        //   $this->logAuditTrail('create', $role, null, $city->toArray());
+
         $idAccount = $request->id_account;
         $menuID = $request->menu_id;
         $can_access = $request->can_access;
@@ -234,21 +259,31 @@ class RoleController extends Controller
         $can_delete = $request->can_delete;
         $can_approve = $request->can_approve;
 
-        //Delete Role
+        $dataLama = Role::where('id_account', $idAccount)->get()->toArray();
         Role::where('id_account', $idAccount)->delete();
 
-        for ($i = 0; $i < count($menuID); $i++) {
+        $dataBaru = [];
 
-            $role = new Role;
-            $role->id_menu = $menuID[$i];
-            $role->id_account = $idAccount;
-            $role->can_access = isset($can_access[$menuID[$i]]) ? $can_access[$menuID[$i]] : 'N';
-            $role->can_update = isset($can_update[$menuID[$i]]) ? $can_update[$menuID[$i]] : 'N';
-            $role->can_delete = isset($can_delete[$menuID[$i]]) ? $can_delete[$menuID[$i]] : 'N';
-            $role->can_create = isset($can_create[$menuID[$i]]) ? $can_create[$menuID[$i]] : 'N';
-            $role->can_approve = isset($can_approve[$menuID[$i]]) ? $can_approve[$menuID[$i]] : 'N';
+        for ($i = 0; $i < count($menuID); $i++) {
+            $newRole = [
+                'id_menu' => $menuID[$i],
+                'id_account' => $idAccount,
+                'can_access' => isset($can_access[$menuID[$i]]) ? $can_access[$menuID[$i]] : 'N',
+                'can_update' => isset($can_update[$menuID[$i]]) ? $can_update[$menuID[$i]] : 'N',
+                'can_delete' => isset($can_delete[$menuID[$i]]) ? $can_delete[$menuID[$i]] : 'N',
+                'can_create' => isset($can_create[$menuID[$i]]) ? $can_create[$menuID[$i]] : 'N',
+                'can_approve' => isset($can_approve[$menuID[$i]]) ? $can_approve[$menuID[$i]] : 'N',
+            ];
+
+            $dataBaru[] = $newRole;
+
+            $role = new Role($newRole);
             $role->save();
         }
+
+        // Log perubahan (gunakan nama model saja karena tidak ada instance tunggal)
+        $this->logAuditTrail('update', 'App\\Models\\Role', $dataLama, $dataBaru);
+
 
         return redirect()->route('jade.role.detail', $idAccount)->with('alert', 'Hak akses berhasil diubah');
     }
