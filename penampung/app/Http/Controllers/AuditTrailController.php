@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Arr;
 
 
 require_once 'thirdparty/vendor/autoload.php';
@@ -202,8 +203,25 @@ class AuditTrailController extends Controller
         $audit = AuditTrails::with('user')->where('is_delete', 'N')->whereBetween('created_date', [$start, $end])->orderBy('created_date', 'asc')->get();
         $start = date('d-m-Y', strtotime($request->tanggal_awal));
         $end = date('d-m-Y', strtotime($request->tanggal_akhir));
-        //  return $audit;
         if ($request->export == 'excel') {
+            // $before =[];
+            // $after= [];
+            $audit = $audit->map(function ($item) {
+                // Decode JSON dengan pengecekan validitas
+                $jsonArrayBefore = json_decode($item->before, true);
+                $jsonArrayAfter = json_decode($item->after, true);
+
+                // Jika decode gagal, inisialisasi sebagai array kosong
+                $jsonArrayBefore = is_array($jsonArrayBefore) ? $jsonArrayBefore : [];
+                $jsonArrayAfter = is_array($jsonArrayAfter) ? $jsonArrayAfter : [];
+
+                // Ambil hanya value dari JSON, dan filter null
+                $item->before = [array_filter(array_values($jsonArrayBefore), fn($val) => !is_null($val))];
+                $item->after = [array_filter(array_values($jsonArrayAfter), fn($val) => !is_null($val))];
+
+                return $item;
+            });
+
 
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
@@ -256,12 +274,16 @@ class AuditTrailController extends Controller
             }
             // Misal kamu punya data $user
             $row = 9;
+
             foreach ($audit as $u) {
+                $before = is_array($u->before) ? implode(', ', Arr::flatten($u->before)) : $u->before;
+                $after = is_array($u->after) ? implode(', ', Arr::flatten($u->after)) : $u->after;
+
                 $sheet->setCellValue("A{$row}", $u->created_date);
-                $sheet->setCellValue("B{$row}", $u->before);
-                $sheet->setCellValue("C{$row}", $u->after);
-                $sheet->setCellValue("D{$row}", $u->user->nm_user);
-                $sheet->setCellValue("E{$row}", $u->user->branch_name);
+                $sheet->setCellValue("B{$row}", $before);
+                $sheet->setCellValue("C{$row}", $after);
+                $sheet->setCellValue("D{$row}", $u->user->nm_user ?? '-');
+                $sheet->setCellValue("E{$row}", $u->user->branch_name ?? '-');
                 $sheet->setCellValue("F{$row}", $u->browser);
                 $sheet->setCellValue("G{$row}", $u->device);
                 $row++;
@@ -293,6 +315,22 @@ class AuditTrailController extends Controller
             // header("Cache-Control: private", false);
             return view('audit-trail.export-log-aktivitas-excel', compact('audit', 'start', 'end'));
         } else {
+             $audit = $audit->map(function ($item) {
+                // Decode JSON dengan pengecekan validitas
+                $jsonArrayBefore = json_decode($item->before, true);
+                $jsonArrayAfter = json_decode($item->after, true);
+
+                // Jika decode gagal, inisialisasi sebagai array kosong
+                $jsonArrayBefore = is_array($jsonArrayBefore) ? $jsonArrayBefore : [];
+                $jsonArrayAfter = is_array($jsonArrayAfter) ? $jsonArrayAfter : [];
+
+                // Ambil hanya value dari JSON, dan filter null
+                $item->before = [array_filter(array_values($jsonArrayBefore), fn($val) => !is_null($val))];
+                $item->after = [array_filter(array_values($jsonArrayAfter), fn($val) => !is_null($val))];
+
+                return $item;
+            });
+
             return view('audit-trail.export-log-aktivitas-pdf', compact('audit', 'start', 'end'));
         }
     }
