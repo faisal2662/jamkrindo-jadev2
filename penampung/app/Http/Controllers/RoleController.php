@@ -281,8 +281,9 @@ class RoleController extends Controller
             $role->save();
         }
 
+
         // Log perubahan (gunakan nama model saja karena tidak ada instance tunggal)
-        $this->logAuditTrail('update', 'App\\Models\\Role', $dataLama, $dataBaru);
+      $this->logAuditTrail('update_roles', 'App\\Models\\Role', $dataLama, $dataBaru);
 
 
         return redirect()->route('jade.role.detail', $idAccount)->with('alert', 'Hak akses berhasil diubah');
