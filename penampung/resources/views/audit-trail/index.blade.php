@@ -346,7 +346,7 @@
                     // Kosongkan list sebelum menambahkan elemen baru
                     $('#list_before').empty();
                     $('#list_after').empty();
-                    const data_before = [{
+                    const data_before_1 = [{
                             "id_menu": "1",
                             "can_access": "Y",
                             "can_create": "Y",
@@ -358,7 +358,7 @@
                         // Tambah data lainnya...
                     ];
 
-                    const data_after = [{
+                    const data_after_1 = [{
                             "id_menu": "1",
                             "can_access": "Y",
                             "can_create": "N", // contoh perubahan
@@ -419,8 +419,8 @@
                         deleted_date: "Deleted Date",
                     }
                     if (data.data.action == 'update_roles') {
-                         Object.entries(data_before).forEach((beforeItem, index) => {
-                            const afterItem = data_after[index];
+                        data_before_1.forEach((beforeItem, index) => {
+                            const afterItem = data_after_1[index];
 
                             if (!afterItem) return; // Lewati jika tidak ada data pembanding
 
@@ -442,19 +442,6 @@
                                 );
                             });
                         });
-                    }else if (data.data.before == 'null') {
-                        // Tampilkan data before
-                        Object.entries(data_after).forEach(([key, value]) => {
-                            if (key == 'created_date' || key == 'updated_date') {
-
-                                $('#list_after').append(`<li class="list-group-item list-group-item-primary" > <strong> ${mapping[key]  ?? key} </strong> : ${formatTanggal(value) ?? '-'}</li>
-                                `);
-                            } else {
-
-                                $('#list_after').append(`<li class="list-group-item list-group-item-primary" > <strong> ${mapping[key]  ?? key} </strong> : ${value ?? '-'}</li>
-                                `);
-                            }
-                        });
                     } else if (data.data.after == 'null') {
 
                         // Tampilkan data before
@@ -469,7 +456,7 @@
                                 `);
                             }
                         });
-                    }  else {
+                    } else {
                         Object.entries(data_before).forEach(([key, value]) => {
                             if (key in data_after) {
                                 // Highlight perbedaan dengan gaya tambahan
