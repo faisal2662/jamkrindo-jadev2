@@ -332,265 +332,327 @@
 
         function detail(id) {
             $.ajax({
-                    url: "{{ route('audit-trail.show', '') }}/" + id,
-                    processing: false,
-                    serverSide: false,
-                    type: 'GET',
-                    success: function(data) {
-                        console.log(data.data)
-                        // $('#ubahModalLabel').text(data.data.id_audit_trails)
-                        let data_before = JSON.parse(data.data.before); // Mengonversi string JSON menjadi objek
-                        let data_after = JSON.parse(data.data.after); // Mengonversi string JSON menjadi objek
-                        $('#aksiModal').text('')
-                        $('#aksiModal').text(data.data.action.toUpperCase());
-                        // Kosongkan list sebelum menambahkan elemen baru
-                        $('#list_before').empty();
-                        $('#list_after').empty();
-                        const data_before_1 = [{
-                                "id_menu": "1",
-                                "can_access": "Y",
-                                "can_create": "Y",
-                                "can_delete": "Y",
-                                "can_update": "Y",
-                                "id_account": "4",
-                                "can_approve": "N"
-                            },
-                            // Tambah data lainnya...
-                        ];
+                url: "{{ route('audit-trail.show', '') }}/" + id,
+                processing: false,
+                serverSide: false,
+                type: 'GET',
+                success: function(data) {
+                    // console.log(data.data.before)
+                    // console.log(data.data.after)
+                    // $('#ubahModalLabel').text(data.data.id_audit_trails)
+                    let data_before = JSON.parse(data.data.before); // Mengonversi string JSON menjadi objek
+                    let data_after = JSON.parse(data.data.after); // Mengonversi string JSON menjadi objek
+                    // console.log(data_before)
+                    // console.log(data_after)
+                    $('#aksiModal').text('')
+                    $('#aksiModal').text(data.data.action.toUpperCase());
+                    // Kosongkan list sebelum menambahkan elemen baru
+                    $('#list_before').empty();
+                    $('#list_after').empty();
 
-                        const data_after_1 = [{
-                                "id_menu": "1",
-                                "can_access": "Y",
-                                "can_create": "N", // contoh perubahan
-                                "can_delete": "Y",
-                                "can_update": "Y",
-                                "id_account": "4",
-                                "can_approve": "N"
-                            },
-                            // Tambah data lainnya...
-                        ];
-                        const menu = {
-                            1: "Dashboard",
-                            2: "Admin Management",
-                            3: "Customer Management",
-                            4: "Chat Management",
-                            5: "Product",
-                            6: "Category Product",
-                            7: "Branch Management",
-                            8: "Region Management",
-                            9: "City Management",
-                            10: "Province Management",
-                            11: "Master Akses",
-                            12: "Master Data",
-                            13: "General Options",
-                            14: "Master Produk",
-                            15: "Master Lokasi",
-                            16: "News Management",
-                            19: "Reporting",
-                            20: "Report Customer",
-                            21: "Report DWH",
-                            30: "SMTP",
-                            31: "Audit Trail"
-                        };
-                        const mapping = {
-                            email: "Email",
-                            kd_cabang: "Kode Cabang",
-                            kd_wilayah: "Wilayah",
-                            nm_cabang: "Nama Cabang",
-                            nm_provinsi: "Nama Provinsi",
-                            kd_kategori_produk: "Kategori Produk",
-                            nm_kategori_produk: "Nama Kategori Produk",
-                            nm_category: "Nama Kategori Produk",
-                            title_produk: "Title Produk",
-                            email_smtp: "Email SMTP",
-                            host_smtp: "Host SMTP",
-                            port_smtp: "Post SMTP",
-                            username_smtp: "Username SMTP",
-                            password_smtp: "Password SMTP",
-                            enkripsi_smtp: "Enkripsi SMTP",
-                            alamat_email_smtp: "Alamat Email SMTP",
-                            nama_email_smtp: "Nama Email SMTP",
-                            status_produk: "Status Produk",
-                            description_produk: "Deskripsi Produk",
-                            images_produk: "Gambar Produk",
-                            tgl_produk: "Tanggal Produk",
-                            nm_wilayah: "Nama Wilayah",
-                            icon_kategori: "Url Kategori",
-                            desc_cabang: "Deskripsi Cabang",
-                            desc_wilayah: "Deskripsi Wilayah",
-                            latitude_cabang: "Latitude Cabang",
-                            longitude_cabang: "Longitude Cabang",
-                            kd_provinsi: "Provinsi",
-                            kd_kota: "Kota",
-                            alamat_cabang: "Alamat Cabang",
-                            telp_cabang: "Telepon Cabang",
-                            kelas_uker: "Kelas Uker",
-                            fax: "Fax",
-                            nm_kota: "Nama Kota",
-                            postal_code: "Kode Pos",
-                            tipe: "Tipe",
-                            isi_berita: "Isi Berita",
-                            foto_berita: "Banner Berita",
-                            tgl_berita: "Tanggal Posting",
-                            judul_berita: "Judul Berita",
-                            status_berita: "Status Berita",
-                            created_by: "Created By",
-                            created_date: "Created Date",
-                            updated_date: "Updated Date",
-                            updated_by: "Updated By",
-                            deleted_by: "Deleted By",
-                            deleted_date: "Deleted Date",
-                        }
-                        if (data.data.action == 'update_roles') {
+                    const menu = {
+                        1: "Dashboard",
+                        2: "Admin Management",
+                        3: "Customer Management",
+                        4: "Chat Management",
+                        5: "Product",
+                        6: "Category Product",
+                        7: "Branch Management",
+                        8: "Region Management",
+                        9: "City Management",
+                        10: "Province Management",
+                        11: "Master Akses",
+                        12: "Master Data",
+                        13: "General Options",
+                        14: "Master Produk",
+                        15: "Master Lokasi",
+                        16: "News Management",
+                        19: "Reporting",
+                        20: "Report Customer",
+                        21: "Report DWH",
+                        30: "SMTP",
+                        31: "Audit Trail"
+                    };
+                    const mapping = {
+                        email: "Email",
+                        kd_cabang: "Kode Cabang",
+                        kd_wilayah: "Wilayah",
+                        nm_cabang: "Nama Cabang",
+                        nm_provinsi: "Nama Provinsi",
+                        kd_kategori_produk: "Kategori Produk",
+                        nm_kategori_produk: "Nama Kategori Produk",
+                        nm_category: "Nama Kategori Produk",
+                        title_produk: "Title Produk",
+                        email_smtp: "Email SMTP",
+                        host_smtp: "Host SMTP",
+                        port_smtp: "Post SMTP",
+                        username_smtp: "Username SMTP",
+                        password_smtp: "Password SMTP",
+                        enkripsi_smtp: "Enkripsi SMTP",
+                        alamat_email_smtp: "Alamat Email SMTP",
+                        nama_email_smtp: "Nama Email SMTP",
+                        status_produk: "Status Produk",
+                        description_produk: "Deskripsi Produk",
+                        images_produk: "Gambar Produk",
+                        tgl_produk: "Tanggal Produk",
+                        nm_wilayah: "Nama Wilayah",
+                        icon_kategori: "Url Kategori",
+                        desc_cabang: "Deskripsi Cabang",
+                        desc_wilayah: "Deskripsi Wilayah",
+                        latitude_cabang: "Latitude Cabang",
+                        longitude_cabang: "Longitude Cabang",
+                        kd_provinsi: "Provinsi",
+                        kd_kota: "Kota",
+                        alamat_cabang: "Alamat Cabang",
+                        telp_cabang: "Telepon Cabang",
+                        kelas_uker: "Kelas Uker",
+                        fax: "Fax",
+                        nm_kota: "Nama Kota",
+                        postal_code: "Kode Pos",
+                        tipe: "Tipe",
+                        isi_berita: "Isi Berita",
+                        foto_berita: "Banner Berita",
+                        tgl_berita: "Tanggal Posting",
+                        judul_berita: "Judul Berita",
+                        status_berita: "Status Berita",
+                        created_by: "Created By",
+                        created_date: "Created Date",
+                        updated_date: "Updated Date",
+                        updated_by: "Updated By",
+                        deleted_by: "Deleted By",
+                        deleted_date: "Deleted Date",
+                    }
+                    if (data.data.action == 'update_roles') {
 
-                            data_before_1.forEach((beforeItem, index) => {
-                                    const afterItem = data_after_1[index];
+                        // Ubah jadi map dengan key = id_menu
+                        const map_before = Object.fromEntries(data_before.map(item => [item.id_menu.toString(),
+                            item
+                        ]));
+                        const map_after = Object.fromEntries(data_after.map(item => [item.id_menu.toString(),
+                            item
+                        ]));
+                        const userValueBefore = data_before[0]?.user;
+                        const userValueAfter = data_after[0]?.user;
+                       
+                        $('#list_before').append(`
+                    <li class="list-group-item list-group-item-warning">
+                       User: ${userValueBefore}
+                    </li>
+                `);
+                        $('#list_after').append(`
+                    <li class="list-group-item list-group-item-primary">
+                        User : ${userValueAfter}
+                    </li>
+                `);
+                        // Gabungkan semua id_menu yang ada
+                        const all_menu_ids = new Set([
+                            ...Object.keys(map_before),
+                            ...Object.keys(map_after)
+                        ]);
 
-                                    if (!afterItem) return; // Lewati jika tidak ada data pembanding
+                        // Loop setiap id_menu
+                        all_menu_ids.forEach(id_menu => {
+                            const before = map_before[id_menu] || {};
+                            const after = map_after[id_menu] || {};
 
-                                    Object.keys(beforeItem).forEach((key) => {
-                                            const beforeValue = beforeItem[key];
-                                            const afterValue = afterItem[key];
-                                            const isChanged = beforeValue !== afterValue;
+                            // Ambil semua key yang unik dari kedua objek
+                            const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
 
-                                            if (key == 'id_menu') {
-                                                $('#list_before').append(
-                                                    `<li class="list-group-item${isChanged ? ' list-group-item-warning' : ''}">
-        [Menu ${beforeItem.id_menu}] Menu: ${menu[beforeValue] ?? '-'}
-    </li>`
-                                                );
+                            keys.forEach(key => {
+
+                                // Abaikan perbandingan id_menu dan id_role (jika perlu)
+                                if (key === 'id_menu' || key === 'id_role') return;
+
+                                const valBefore = before[key] ?? '-';
+                                const valAfter = after[key] ?? '-';
+
+                                // Tampilkan hanya jika berbeda
+                                if (valBefore !== valAfter && key != 'id_account' && key !=
+                                    'id_account') {
+                                    $('#list_before').append(`
+                    <li class="list-group-item list-group-item-warning">
+                        [Menu ${menu[id_menu]}] ${key}: ${valBefore}
+                    </li>
+                `);
+                                    $('#list_after').append(`
+                    <li class="list-group-item list-group-item-primary">
+                        [Menu ${menu[id_menu]}] ${key}: ${valAfter}
+                    </li>
+                `);
+                                }
+                            });
+                        });
 
 
-                                                $('#list_after').append(
-                                                    `<li class="list-group-item${isChanged ? ' list-group-item-primary' : ''}">
-        [Menu ${afterItem.id_menu}] menu: ${menu[afterValue] ?? '-'}
-    </li>`
-                                                );
 
-                                    }
-                                    else {
-                                        $('#list_before').append(
-                                            `<li class="list-group-item${isChanged ? ' list-group-item-warning' : ''}">
-        [Menu ${beforeItem.id_menu}] ${key}: ${beforeValue ?? '-'}
-    </li>`
-                                        );
-                                        $('#list_after').append(
-                                            `<li class="list-group-item${isChanged ? ' list-group-item-primary' : ''}">
-        [Menu ${afterItem.id_menu}] ${key}: ${afterValue ?? '-'}
-    </li>`
-                                        );
-                                    }
-                                });
-                                });
-                }
-                else if (data.data.after == 'null') {
 
-                    // Tampilkan data before
-                    Object.entries(data_before).forEach(([key, value]) => {
-                        if (key == 'created_date' || key == 'updated_date') {
+                        // data_before_1.forEach((beforeItem, index) => {
+                        //     const afterItem = data_after_1[index];
 
-                            $('#list_before').append(`<li class="list-group-item list-group-item-warning" > <strong> ${mapping[key]  ?? key} </strong> : ${formatTanggal(value) ?? '-'}</li>
+                        //     if (!afterItem) return; // Lewati jika tidak ada data pembanding
+
+                        //     Object.keys(beforeItem).forEach((key) => {
+                        //         const beforeValue = beforeItem[key];
+                        //         const afterValue = afterItem[key];
+                        //         const isChanged = beforeValue !== afterValue;
+                        //         // console.log(beforeItem, afterItem)
+
+                        //         if (key == 'id_menu') {
+                        //             // $.each(afterItem, function(index, value) {
+                        //             //     console.log(index)
+                        //             //     $('#list_after').append(
+                        //             //         `<li class="list-group-item${isChanged ? ' list-group-item-primary' : ''}">
+                    //             //                 menu: ${menu[value] ?? '-'}
+                    //             //             </li>`
+                        //             //     );
+                        //             // });
+                        //             $('#list_after').append(
+                        //                 `<li class="list-group-item${isChanged ? ' list-group-item-primary' : ''}">
+                    //                         [Menu ${afterItem.id_menu}] menu: ${menu[afterValue] ?? '-'}
+                    //                     </li>`
+                        //             );
+                        //             // $.each(beforeItem, function(index, value) {
+                        //             //     console.log('before')
+                        //             //     console.log(value)
+
+                        //             //     $('#list_before').append(
+                        //             //         `<li class="list-group-item${isChanged ? ' list-group-item-warning' : ''}">
+                    //             //                     Menu: ${menu[beforeValue] ?? '-'}
+                    //             //                 </li>`
+                        //             //     );
+                        //             // });
+                        //             $('#list_before').append(
+                        //                 `<li class="list-group-item${isChanged ? ' list-group-item-warning' : ''}">
+                    //                             [Menu ${beforeItem.id_menu}] Menu: ${menu[beforeValue] ?? '-'}
+                    //                         </li>`
+                        //             );
+
+
+
+
+                        //         } else {
+
+                        //             $('#list_before').append(
+                        //                 `<li class="list-group-item${isChanged ? ' list-group-item-warning' : ''}">
+                    //                         [Menu ${beforeItem.id_menu}] ${key}: ${beforeValue ?? '-'}
+                    //                     </li>`
+                        //             );
+                        //             $('#list_after').append(
+                        //                 `<li class="list-group-item${isChanged ? ' list-group-item-primary' : ''}">
+                    //                     [Menu ${afterItem.id_menu}] ${key}: ${afterValue ?? '-'}
+                    //                 </li>`
+                        //             );
+                        //         }
+                        //     });
+                        // });
+                    } else if (data.data.after == 'null') {
+
+                        // Tampilkan data before
+                        Object.entries(data_before).forEach(([key, value]) => {
+                            if (key == 'created_date' || key == 'updated_date') {
+
+                                $('#list_before').append(`<li class="list-group-item list-group-item-warning" > <strong> ${mapping[key]  ?? key} </strong> : ${formatTanggal(value) ?? '-'}</li>
                                 `);
-                        } else {
+                            } else {
 
-                            $('#list_before').append(`<li class="list-group-item list-group-item-warning" > <strong> ${mapping[key]  ?? key} </strong> : ${value ?? '-'}</li>
+                                $('#list_before').append(`<li class="list-group-item list-group-item-warning" > <strong> ${mapping[key]  ?? key} </strong> : ${value ?? '-'}</li>
                                 `);
-                        }
-                    });
-                } else {
-                    Object.entries(data_before).forEach(([key, value]) => {
-                        if (key in data_after) {
-                            // Highlight perbedaan dengan gaya tambahan
-                            const isChanged = data_after[key] !== value;
-                            $('#list_before', ).append(
-                                `<li class="list-group-item${isChanged ? ' list-group-item-warning' : ''}">
+                            }
+                        });
+                    } else {
+                        Object.entries(data_before).forEach(([key, value]) => {
+                            if (key in data_after) {
+                                // Highlight perbedaan dengan gaya tambahan
+                                const isChanged = data_after[key] !== value;
+                                $('#list_before', ).append(
+                                    `<li class="list-group-item${isChanged ? ' list-group-item-warning' : ''}">
                                   ${value ?? '-'}
                                 </li>`);
-                        }
-                    });
+                            }
+                        });
 
-                    // Tampilkan data `after` hanya jika kunci juga ada di `before`
-                    Object.entries(data_after).forEach(([key, value]) => {
-                        if (key in data_before) {
-                            // Highlight perbedaan dengan gaya tambahan
+                        // Tampilkan data `after` hanya jika kunci juga ada di `before`
+                        Object.entries(data_after).forEach(([key, value]) => {
+                            if (key in data_before) {
+                                // Highlight perbedaan dengan gaya tambahan
 
-                            const isChanged = data_before[key] !== value;
+                                const isChanged = data_before[key] !== value;
 
-                            $('#list_after').append(
-                                `<li class="list-group-item${isChanged ? ' list-group-item-primary' : ''}">
+                                $('#list_after').append(
+                                    `<li class="list-group-item${isChanged ? ' list-group-item-primary' : ''}">
                                              ${value ?? '-'}
                                             </li>`);
-                        }
-                    });
+                            }
+                        });
 
+                    }
+
+                    function formatTanggal(isoDate) {
+                        // Konversi string ISO menjadi objek Date
+                        let date = new Date(isoDate);
+
+                        // Array nama bulan
+                        let months = [
+                            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                        ];
+
+                        // Ambil tanggal, bulan, dan tahun
+                        let day = date.getDate(); // Tanggal
+                        let month = months[date.getMonth()]; // Nama bulan (dari array)
+                        let year = date.getFullYear(); // Tahun
+
+                        // Format hasil menjadi "15 Januari 2025"
+                        return `${day} ${month} ${year}`;
+                    }
+
+                    // for (let data_before in before) {
+                    //     if (data_before in after) {
+                    //         if (data_before in mapping) {
+                    //             // Gunakan nama alias dari objek mapping
+                    //             $('#list_before').append(
+                    //                 `<li class="list-group-item"><strong>${mapping[data_before]}</strong> : ${before[data_before]}</li>`
+                    //             );
+                    //         }
+                    //     }
+                    // }
+                    // Tampilkan data `after` jika ada
+                    // if (after) {
+                    //     Object.entries(after).forEach(([key, value]) => {
+                    //         if (key in before) {
+                    //             // Gunakan nama alias jika tersedia
+                    //             const aliasKey = mapping[key] ?? key;
+                    //             $('#list_after').append(
+                    //                 `<li class="list-group-item"><strong>${aliasKey}</strong> : ${value ?? 'N/A'}</li>`
+                    //             );
+                    //         }
+                    //     });
+                    // }
+
+
+                    // for (let data_after in after) {
+                    //     if (data_after in before) {
+                    //         if (data_after in mapping) {
+
+                    //             $('#list_after').append(
+                    //                 `<li class="list-group-item"><strong>${mapping[data_after]}</strong> : ${after[data_after]}</li>`);
+                    //             // Gunakan nama alias dari objek mapping
+                    //         }
+                    //     }
+                    // }
+                    // for (let data_before in before) {
+                    //     if (data_before in after) {
+                    //         if (data_before in mapping) {
+                    //             // Gunakan nama alias dari objek mapping
+                    //             $('#list_before').append(
+                    //                 `<li class="list-group-item"><strong>${mapping[data_before]}</strong> : ${before[data_before]}</li>`
+                    //             );
+                    //         }
+                    //     }
+                    // }
+                    $('#detailAuditModal').modal('show')
                 }
-
-                function formatTanggal(isoDate) {
-                    // Konversi string ISO menjadi objek Date
-                    let date = new Date(isoDate);
-
-                    // Array nama bulan
-                    let months = [
-                        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-                    ];
-
-                    // Ambil tanggal, bulan, dan tahun
-                    let day = date.getDate(); // Tanggal
-                    let month = months[date.getMonth()]; // Nama bulan (dari array)
-                    let year = date.getFullYear(); // Tahun
-
-                    // Format hasil menjadi "15 Januari 2025"
-                    return `${day} ${month} ${year}`;
-                }
-
-                // for (let data_before in before) {
-                //     if (data_before in after) {
-                //         if (data_before in mapping) {
-                //             // Gunakan nama alias dari objek mapping
-                //             $('#list_before').append(
-                //                 `<li class="list-group-item"><strong>${mapping[data_before]}</strong> : ${before[data_before]}</li>`
-                //             );
-                //         }
-                //     }
-                // }
-                // Tampilkan data `after` jika ada
-                // if (after) {
-                //     Object.entries(after).forEach(([key, value]) => {
-                //         if (key in before) {
-                //             // Gunakan nama alias jika tersedia
-                //             const aliasKey = mapping[key] ?? key;
-                //             $('#list_after').append(
-                //                 `<li class="list-group-item"><strong>${aliasKey}</strong> : ${value ?? 'N/A'}</li>`
-                //             );
-                //         }
-                //     });
-                // }
-
-
-                // for (let data_after in after) {
-                //     if (data_after in before) {
-                //         if (data_after in mapping) {
-
-                //             $('#list_after').append(
-                //                 `<li class="list-group-item"><strong>${mapping[data_after]}</strong> : ${after[data_after]}</li>`);
-                //             // Gunakan nama alias dari objek mapping
-                //         }
-                //     }
-                // }
-                // for (let data_before in before) {
-                //     if (data_before in after) {
-                //         if (data_before in mapping) {
-                //             // Gunakan nama alias dari objek mapping
-                //             $('#list_before').append(
-                //                 `<li class="list-group-item"><strong>${mapping[data_before]}</strong> : ${before[data_before]}</li>`
-                //             );
-                //         }
-                //     }
-                // }
-                $('#detailAuditModal').modal('show')
-            }
-        })
+            })
         }
     </script>
 @stop

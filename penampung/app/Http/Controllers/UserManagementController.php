@@ -900,7 +900,7 @@ class UserManagementController extends Controller
                     $role = Role::where('id_account', $id)
                         ->where('id_menu', $idMenu)
                         ->first();
-
+                    
                     if (!$role) {
                         // Jika belum ada, buat baru
                         $role = new Role();
@@ -916,7 +916,7 @@ class UserManagementController extends Controller
                     $role->update(); // gunakan save() karena bisa insert atau update
                 }
             } else {
-               
+
 
                 $menu = [ 2,  5, 6, 7, 8, 12, 14, 15, 16,  22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
                 foreach ($menu as $idMenu) {
