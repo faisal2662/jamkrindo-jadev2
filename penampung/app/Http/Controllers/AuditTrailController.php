@@ -324,6 +324,19 @@ class AuditTrailController extends Controller
                 // Decode JSON
                 $jsonArrayBefore = json_decode($item->before, true);
                 $jsonArrayAfter = json_decode($item->after, true);
+                if ($item->action == 'update_roles') {
+                    $jsonArrayBefore = collect($jsonArrayBefore)->map(function ($item) {
+                        // Modifikasi $item jika perlu
+                        // dd($item);
+                        // $item->user = 
+                      unset($item['id_menu']);
+                      unset($item['id_role']);
+                      unset($item['id_account']);
+                      dd($item);
+                        return $item;
+                    })->toArray(); // Kembalikan ke array jika diperlukan
+                }
+
 
                 // Pastikan hasil decode adalah array, jika tidak, set kosong
                 $jsonArrayBefore = is_array($jsonArrayBefore) ? $jsonArrayBefore : [];

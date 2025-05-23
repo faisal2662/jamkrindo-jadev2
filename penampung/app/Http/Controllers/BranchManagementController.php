@@ -32,7 +32,8 @@ class BranchManagementController extends Controller
     public function getData()
     {
         $role = Role::where('id_account', Auth::user()->kd_user)->where('id_menu', 7)->first();
-        $branchs = Branch::with('Wilayah')->where('is_delete', 'N')->orderBy('created_date', 'desc')->get();
+        $branchs = Branch::with('Wilayah')->whereNotNull('wilayah')->where('is_delete', 'N')->orderBy('created_date', 'desc')->get();
+        $branchs = Branch::with('cabang')->whereNull('wilayah')->where('is_delete', 'N')->orderBy('created_date', 'desc')->get();
         // return response()->json($branch);
 
 

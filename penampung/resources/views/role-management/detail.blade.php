@@ -7,7 +7,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item">User Role Management</li>
-                <li class="breadcrumb-item active">Detail User Role</li>
+                <li class="breadcrumb-item active"> {{$user->nm_user}} </li>
             </ol>
         </nav>
     </div><!-- End Page Title -->
@@ -44,7 +44,7 @@
 
                         <form action="{{ route('jade.role.save') }}" method="POST" id="formRule">
                             {{ csrf_field() }}
-                            <input type="hidden" name="id_account" value="{{ Request()->id }}">
+                            <input type="hidden" name="id_account" value="{{ $user->kd_user }}">
                             <table class="table table-hover table-striped " id="users-table">
                                 <thead>
                                     <tr>
