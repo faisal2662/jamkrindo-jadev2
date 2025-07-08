@@ -873,9 +873,9 @@ class UserManagementController extends Controller
             // $user->functional_name_atasan_dua = $request->functional_name_atasan_dua;
             // $user->npp_atasan_satu = $request->npp_atasan_dua;
             // $user->name_atasan_satu = $request->name_atasan_dua;
-            if ($request->id_role) {
-                $user->id_role = $request->id_role;
-            }
+
+            $user->id_role = $request->id_role;
+
             // if ($request->password) {
             //     $request->validate(
             //         [
@@ -900,7 +900,7 @@ class UserManagementController extends Controller
                     $role = Role::where('id_account', $id)
                         ->where('id_menu', $idMenu)
                         ->first();
-                    
+
                     if (!$role) {
                         // Jika belum ada, buat baru
                         $role = new Role();
@@ -918,7 +918,7 @@ class UserManagementController extends Controller
             } else {
 
 
-                $menu = [ 2,  5, 6, 7, 8, 12, 14, 15, 16,  22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+                $menu = [2,  5, 6, 7, 8, 12, 14, 15, 16,  22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
                 foreach ($menu as $idMenu) {
                     // Cari role berdasarkan id_account dan id_menu
                     $role = Role::where('id_account', $id)
