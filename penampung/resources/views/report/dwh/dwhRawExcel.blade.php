@@ -32,7 +32,10 @@ header("Content-Disposition: attachment; filename=laporan_dwh_sp.xls");
     </style>
 </head>
 <body>
-
+    <center>
+        <img src="{{ asset('assets/img/kop-surat.png') }}" style="width: 60%;border-radius: 5px;">
+    </center>
+    <p>&nbsp;</p>
     <div style="text-align: center;">
         <h3>Laporan DWH</h3>
         <p>Keterangan: <strong>DATA DWH SP</strong></p>

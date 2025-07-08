@@ -11,24 +11,35 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use DataTables;
 
+
+require_once 'thirdparty/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+
 class ReportDWHController extends Controller
 {
-    public function getDwhOld(){
+    public function getDwhOld()
+    {
         $batchSize = 20; // Simpan ke database per 100 data
         $customers = Customer::where('is_delete', 'N')->pluck('company_name')->get();
         // return count($customers);
-        
+
         $batchData = []; // Menyimpan batch sebelum disimpan ke database
         $offset = 0; // Mulai dari index ke-0
         $limit = 10; // Ambil 10 data dari API setiap kali request
         $url = "http://172.27.1.47:4747/dwh_api/spd001";
-    
+
         while ($offset < count($customers)) {
             // Ambil 10 customer dalam setiap request API
             $nasabahChunk = array_slice($customers, $offset, $limit);
             $offset += $limit; // Update offset
-    
-            $nasabahChunk = array_map(function ($customer){
+
+            $nasabahChunk = array_map(function ($customer) {
                 return addslashes($customer);
             }, $nasabahChunk);
             // Kirim request ke API
@@ -45,7 +56,7 @@ class ReportDWHController extends Controller
                 'npwp' => [],
                 'nasabah' => $nasabahChunk
             ];
-    
+
             $ch = curl_init($url);
             curl_setopt_array($ch, [
                 CURLOPT_POST => true,
@@ -57,20 +68,20 @@ class ReportDWHController extends Controller
                 CURLOPT_POSTFIELDS => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 CURLOPT_TIMEOUT => 120
             ]);
-    
+
             $response = curl_exec($ch);
             curl_close($ch);
             $responseData = json_decode($response, true);
             return $responseData;
-    
+
             if (!isset($responseData['data_total']) || !is_array($responseData['data_total'])) {
                 continue; // Lewati jika respons tidak sesuai
             }
-    
+
             foreach ($responseData['data_total'] as $rd) {
                 $tglAkad = date('Y-m-d H:i:s', strtotime($rd['tgl_akad']));
                 $tglSp = date('Y-m-d H:i:s', strtotime($rd['tgl_sp']));
-    
+
                 $batchData[] = [
                     'id_transaksi' => $rd['id_transaksi'],
                     'kantor_wilayah' => $rd['kantor_wilayah'],
@@ -93,7 +104,7 @@ class ReportDWHController extends Controller
                     'created_at' => now(),
                     'updated_at' => now()
                 ];
-    
+
                 // Jika batch sudah mencapai 100, simpan ke database
                 if (count($batchData) >= $batchSize) {
                     Dwh::insert($batchData);
@@ -101,39 +112,40 @@ class ReportDWHController extends Controller
                 }
             }
         }
-    
+
         // Simpan sisa data yang belum masuk batch
         if (!empty($batchData)) {
             Dwh::insert($batchData);
         }
-    
+
         return response()->json(["message" => "Data berhasil disimpan"], 200);
     }
 
-    public function getDwh(){
+    public function getDwh()
+    {
         $batchSize = 500;
         $customers = Customer::where('is_delete', 'N')->whereNotNull('company_name')->pluck('company_name')->toArray();
         $chunk = array_chunk($customers, $batchSize);
-        
+
         $dataTotal = [];
         $dataCs = [];
-        foreach($chunk as $csChunk){
+        foreach ($chunk as $csChunk) {
             $response = $this->sendDwhRequest($csChunk);
 
-            if($response['success']){
+            if ($response['success']) {
                 return response()->json(["error" => $response['error']], 500);
             }
 
             $responseData = $response['data'];
-            if(!empty($responseData['data_total'])){
+            if (!empty($responseData['data_total'])) {
                 $datatotal = array_merge($dataTotal, $responseData['data_total']);
             }
 
             usleep(200000);
         }
 
-        if(!empty($dataTotal)){
-            $dataToInsert = array_map(function ($rd){
+        if (!empty($dataTotal)) {
+            $dataToInsert = array_map(function ($rd) {
                 return [
                     'id_transaksi' => $rd['id_transaksi'],
                     'kantor_wilayah' => $rd['kantor_wilayah'],
@@ -156,12 +168,12 @@ class ReportDWHController extends Controller
                 ];
             }, $dataTotal);
         }
-    
+
         // Gunakan upsert untuk mempercepat penyimpanan data
         Dwh::upsert($dataToInsert, ['id_transaksi'], ['kantor_wilayah', 'wilayah_kerja', 'no_surat', 'tgl_akad', 'nama_proyek', 'id_dc_peruntukan_kredit', 'penerima_jaminan', 'lob', 'produk', 'ktp', 'npwp', 'nasabah', 'nomor_sp', 'tgl_sp', 'pokok_kredit', 'nilai_penjaminan', 'ijp']);
 
-        
-        if(isset($user)){
+
+        if (isset($user)) {
             $log = DB::table('dwh_audit_trails')->insert([
                 // 'kd_user' => $user->kd_user,
                 'action' => 'Generate Manual',
@@ -174,7 +186,7 @@ class ReportDWHController extends Controller
                 // 'platform_version'  => $agent->version($agent->platform()),
                 // 'device'            => $agent->device()
             ]);
-        }else{
+        } else {
             $log = DB::table('dwh_audit_trails')->insert([
                 // 'kd_user' => $user->kd_user,
                 'action' => 'Generate Automatic',
@@ -200,7 +212,7 @@ class ReportDWHController extends Controller
         //         'platform_version'  => $agent->version($agent->platform()),
         //         'device'            => $agent->device()
         //     ]);
-    
+
         return response()->json(['message' => 'Data berhasil diperbarui', 'total' => count($dataToInsert)], 200);
     }
 
@@ -231,17 +243,17 @@ class ReportDWHController extends Controller
             ],
             CURLOPT_POSTFIELDS => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
         ]);
-        
+
         $response = curl_exec($ch);
-        if(curl_errno($ch)){
+        if (curl_errno($ch)) {
             curl_close($ch);
             return response()->json(["error" => curl_error($ch)], 500);
         }
-                
+
         curl_close($ch);
         return ['success' => true, 'data' => json_decode($response, true)];
     }
-    
+
     public function dwh()
     {
         return view('report.dwh.dwh');
@@ -284,11 +296,12 @@ class ReportDWHController extends Controller
         $end = $request->endDate;
         // $dwh = Dwh::get()->groupBy(['kantor_wilayah', 'wilayah_kerja']);
         $dwh = Dwh::selectRaw('kantor_wilayah, wilayah_kerja,
-        SUM(CASE WHEN produk = "Kredit Kontra Bank Garansi" THEN 1 ELSE 0 END) as total_kbg,
-        SUM(CASE WHEN produk = "Surety Bond" THEN 1 ELSE 0 END) as total_suretyship')
-        ->groupBy('kantor_wilayah', 'wilayah_kerja')
-        ->get()
-        ->groupBy('kantor_wilayah');
+        COUNT(DISTINCT CASE WHEN produk = "Kredit Kontra Bank Garansi" THEN nasabah END) as total_kbg,
+        COUNT(DISTINCT CASE WHEN produk = "Surety Bond" THEN nasabah END) as total_suretyship')
+            ->groupBy('kantor_wilayah', 'wilayah_kerja')
+            ->whereBetween('tgl_sp', [$start, $end])
+            ->get()
+            ->groupBy('kantor_wilayah');
         // return $dwh;
 
         return view('report.dwh.dwhPreview', compact('dwh', 'start', 'end'));
@@ -311,7 +324,7 @@ class ReportDWHController extends Controller
             // $act->wilayah = $act->wilayah->nm_wilayah;
             $nasabah = $this->decryptssl($act->nasabah, 'jP.J#8A6VDy[QH$d');
             $npwp = $this->decryptssl($act->npwp, 'jP.J#8A6VDy[QH$d');
-            
+
             $act->nasabah = $nasabah;
             $act->npwp = $npwp;
             $act->date = date('d-m-Y', strtotime($act->tgl_sp));
@@ -337,13 +350,99 @@ class ReportDWHController extends Controller
             // $act->wilayah = $act->wilayah->nm_wilayah;
             $nasabah = $this->decryptssl($act->nasabah, 'jP.J#8A6VDy[QH$d');
             $npwp = $this->decryptssl($act->npwp, 'jP.J#8A6VDy[QH$d');
-            
+
             $act->nasabah = $nasabah;
             $act->npwp = $npwp;
             $act->date = date('d-m-Y', strtotime($act->tgl_sp));
         }
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-        return view('report.dwh.dwhRawExcel', compact('dwh', 'start', 'end'));
+        // ✅ Tambahkan kop surat (gambar PNG)
+        $drawing = new Drawing();
+        $drawing->setName('Kop ');
+        $drawing->setDescription('Kop Jamkrindo');
+        // $drawing->setPath(asset('assets/img/kop-surat.png')); // Path ke file PNG kamu
+        $drawing->setPath(base_path('../assets/img/kop-surat.png')); // Path ke file PNG kamu
+        $drawing->setHeight(100); // Sesuaikan tinggi
+        $drawing->setCoordinates('C1'); // Mulai dari sel A1
+        $drawing->setWorksheet($sheet);
+
+        // ✅ Mulai isi data setelah kop (misalnya dari baris 6)
+        $sheet->setCellValue('A8', 'No.');
+        $sheet->setCellValue('B8', 'No Surat');
+        $sheet->setCellValue('C8', 'Tanggal SP');
+        $sheet->setCellValue('D8', 'Nasabah');
+        $sheet->setCellValue('E8', 'Kantor Wilayah');
+        $sheet->setCellValue('F8', 'Wilayah Kerja');
+        $sheet->setCellValue('G8', 'Penerima Jaminan');
+        $sheet->setCellValue('H8', 'LOB');
+        $sheet->setCellValue('I8', 'Produk');
+        $sheet->setCellValue('J8', 'NPWP');
+
+        // style
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+                'size' => 12,
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '0070C0'],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
+        ];
+
+        $sheet->getStyle("A8:J8")->applyFromArray($headerStyle);
+        $highestColumn = $sheet->getHighestColumn();
+        foreach (range('A', $highestColumn) as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        // Misal kamu punya data $user
+        $row = 9;
+        $no = 1;
+        foreach ($dwh as $item) {
+
+
+            $sheet->setCellValue("A{$row}", $no++);
+            $sheet->setCellValue("B{$row}", $item->no_surat);
+            $sheet->setCellValue("C{$row}", $item->date);
+            $sheet->setCellValue("D{$row}", $item->nasabah);
+            $sheet->setCellValue("E{$row}", $item->kantor_wilayah);
+            $sheet->setCellValue("F{$row}", $item->wilayah_kerja);
+            $sheet->setCellValue("G{$row}", $item->penerima_jaminan);
+            $sheet->setCellValue("H{$row}", $item->lob);
+            $sheet->setCellValue("I{$row}", $item->produk);
+            $sheet->setCellValue("J{$row}", $item->npwp);
+            $row++;
+        }
+        $lastRow = $row - 1;
+        $sheet->getStyle("A9:J{$lastRow}")->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
+        ]);
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, 'Laporan DWH.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+        // return view('report.dwh.dwhRawExcel', compact('dwh', 'start', 'end'));
         // return view('report.customerPreview', compact('customer', 'messages', 'start', 'end'));
     }
 
@@ -355,9 +454,9 @@ class ReportDWHController extends Controller
         $dwh = Dwh::selectRaw('kantor_wilayah, wilayah_kerja,
         SUM(CASE WHEN produk = "Kredit Kontra Bank Garansi" THEN 1 ELSE 0 END) as total_kbg,
         SUM(CASE WHEN produk = "Surety Bond" THEN 1 ELSE 0 END) as total_suretyship')
-        ->groupBy('kantor_wilayah', 'wilayah_kerja')
-        ->get()
-        ->groupBy('kantor_wilayah');
+            ->groupBy('kantor_wilayah', 'wilayah_kerja')
+            ->get()
+            ->groupBy('kantor_wilayah');
         // return $dwh;
 
         return view('report.dwh.dwhPdf', compact('dwh', 'start', 'end'));
@@ -371,10 +470,10 @@ class ReportDWHController extends Controller
         $dwh = Dwh::selectRaw('kantor_wilayah, wilayah_kerja,
         SUM(CASE WHEN produk = "Kredit Kontra Bank Garansi" THEN 1 ELSE 0 END) as total_kbg,
         SUM(CASE WHEN produk = "Surety Bond" THEN 1 ELSE 0 END) as total_suretyship')
-        ->groupBy('kantor_wilayah', 'wilayah_kerja')
-        ->get()
-        ->groupBy('kantor_wilayah');
-        // return $dwh;
+            ->groupBy('kantor_wilayah', 'wilayah_kerja')
+            ->get()
+            ->groupBy('kantor_wilayah');
+
 
         return view('report.dwh.dwhExcel', compact('dwh', 'start', 'end'));
         // return view('report.customerPreview', compact('customer', 'messages', 'start', 'end'));
@@ -445,11 +544,11 @@ class ReportDWHController extends Controller
             'Content-Type: application/json'
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            // Mengatur batas waktu koneksi (dalam detik)
-            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
+        // Mengatur batas waktu koneksi (dalam detik)
+        // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
 
-            // Mengatur batas waktu eksekusi total (dalam detik)
-            // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
+        // Mengatur batas waktu eksekusi total (dalam detik)
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
 
         // Eksekusi cURL
         $response = curl_exec($ch);
@@ -462,7 +561,7 @@ class ReportDWHController extends Controller
         curl_close($ch);
 
         // Mengubah JSON menjadi array PHPdd9
-        $dataIjp = json_decode($response,true);
+        $dataIjp = json_decode($response, true);
         $data = $dataIjp['data_total'];
         // return $data;
 
@@ -498,11 +597,11 @@ class ReportDWHController extends Controller
             'Content-Type: application/json'
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            // Mengatur batas waktu koneksi (dalam detik)
-            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
+        // Mengatur batas waktu koneksi (dalam detik)
+        // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
 
-            // Mengatur batas waktu eksekusi total (dalam detik)
-            // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
+        // Mengatur batas waktu eksekusi total (dalam detik)
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
 
         // Eksekusi cURL
         $response = curl_exec($ch);
@@ -515,7 +614,7 @@ class ReportDWHController extends Controller
         curl_close($ch);
 
         // Mengubah JSON menjadi array PHPdd9
-        $data = json_decode($response,true);
+        $data = json_decode($response, true);
         $dataPdf = $data['data_total'];
 
         return view('report.dwh.service-ijp.service-ijp-pdf', compact('dataPdf'));
@@ -550,11 +649,11 @@ class ReportDWHController extends Controller
             'Content-Type: application/json'
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            // Mengatur batas waktu koneksi (dalam detik)
-            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
+        // Mengatur batas waktu koneksi (dalam detik)
+        // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
 
-            // Mengatur batas waktu eksekusi total (dalam detik)
-            // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
+        // Mengatur batas waktu eksekusi total (dalam detik)
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
 
         // Eksekusi cURL
         $response = curl_exec($ch);
@@ -567,7 +666,7 @@ class ReportDWHController extends Controller
         curl_close($ch);
 
         // Mengubah JSON menjadi array PHPdd9
-        $data = json_decode($response,true);
+        $data = json_decode($response, true);
         $dataPdf = $data['data_total'];
 
         return view('report.dwh.service-ijp.service-ijp-excel', compact('dataPdf'));
@@ -630,11 +729,11 @@ class ReportDWHController extends Controller
             'Content-Type: application/json'
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            // Mengatur batas waktu koneksi (dalam detik)
-            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
+        // Mengatur batas waktu koneksi (dalam detik)
+        // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
 
-            // Mengatur batas waktu eksekusi total (dalam detik)
-            // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
+        // Mengatur batas waktu eksekusi total (dalam detik)
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
 
         // Eksekusi cURL
         $response = curl_exec($ch);
@@ -647,7 +746,7 @@ class ReportDWHController extends Controller
         curl_close($ch);
 
         // Mengubah JSON menjadi array PHPdd9
-        $data = json_decode($response,true);
+        $data = json_decode($response, true);
 
         return datatables::of($data['data_dwh'])->escapecolumns([])->make(true);
     }
@@ -709,11 +808,11 @@ class ReportDWHController extends Controller
             'Content-Type: application/json'
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            // Mengatur batas waktu koneksi (dalam detik)
-            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
+        // Mengatur batas waktu koneksi (dalam detik)
+        // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
 
-            // Mengatur batas waktu eksekusi total (dalam detik)
-            // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
+        // Mengatur batas waktu eksekusi total (dalam detik)
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
 
         // Eksekusi cURL
         $response = curl_exec($ch);
@@ -726,7 +825,7 @@ class ReportDWHController extends Controller
         curl_close($ch);
 
         // Mengubah JSON menjadi array PHPdd9
-        $data = json_decode($response,true);
+        $data = json_decode($response, true);
 
         return datatables::of($data['data_dwh'])->escapecolumns([])->make(true);
     }
@@ -788,11 +887,11 @@ class ReportDWHController extends Controller
             'Content-Type: application/json'
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            // Mengatur batas waktu koneksi (dalam detik)
-            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
+        // Mengatur batas waktu koneksi (dalam detik)
+        // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
 
-            // Mengatur batas waktu eksekusi total (dalam detik)
-            // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
+        // Mengatur batas waktu eksekusi total (dalam detik)
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
 
         // Eksekusi cURL
         $response = curl_exec($ch);
@@ -805,7 +904,7 @@ class ReportDWHController extends Controller
         curl_close($ch);
 
         // Mengubah JSON menjadi array PHPdd9
-        $data = json_decode($response,true);
+        $data = json_decode($response, true);
 
         return datatables::of($data['data_dwh'])->escapecolumns([])->make(true);
     }
@@ -867,11 +966,11 @@ class ReportDWHController extends Controller
             'Content-Type: application/json'
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            // Mengatur batas waktu koneksi (dalam detik)
-            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
+        // Mengatur batas waktu koneksi (dalam detik)
+        // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
 
-            // Mengatur batas waktu eksekusi total (dalam detik)
-            // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
+        // Mengatur batas waktu eksekusi total (dalam detik)
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
 
         // Eksekusi cURL
         $response = curl_exec($ch);
@@ -884,7 +983,7 @@ class ReportDWHController extends Controller
         curl_close($ch);
 
         // Mengubah JSON menjadi array PHPdd9
-        $data = json_decode($response,true);
+        $data = json_decode($response, true);
 
         return datatables::of($data['data_dwh'])->escapecolumns([])->make(true);
     }
@@ -940,11 +1039,11 @@ class ReportDWHController extends Controller
             'Content-Type: application/json'
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            // Mengatur batas waktu koneksi (dalam detik)
-            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
+        // Mengatur batas waktu koneksi (dalam detik)
+        // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
 
-            // Mengatur batas waktu eksekusi total (dalam detik)
-            // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
+        // Mengatur batas waktu eksekusi total (dalam detik)
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
 
         // Eksekusi cURL
         $response = curl_exec($ch);
@@ -957,13 +1056,14 @@ class ReportDWHController extends Controller
         curl_close($ch);
 
         // Mengubah JSON menjadi array PHPdd9
-        $data = json_decode($response,true);
+        $data = json_decode($response, true);
 
         return datatables::of($data['data_dwh'])->escapecolumns([])->make(true);
     }
 
-    private function getToken(){
-        
+    private function getToken()
+    {
+
         $url = "http://172.27.1.52:5252/hris/api/auth/signin";
 
         // Data yang akan dikirimkan
@@ -971,10 +1071,10 @@ class ReportDWHController extends Controller
             'username' => "01342",
             'password' => "Jamkrindo123",
         ];
-        
+
         // Inisialisasi cURL
         $ch = curl_init($url);
-        
+
         // Set opsi cURL untuk permintaan POST
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -984,10 +1084,10 @@ class ReportDWHController extends Controller
             'Accept: application/json',
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); // Encode data menjadi URL-encoded format
-        
+
         // Eksekusi permintaan dan ambil respons 
         $response = curl_exec($ch);
-        
+
         // Periksa apakah ada error
         if (curl_errno($ch)) {
             echo 'Error:' . curl_error($ch);
@@ -995,17 +1095,18 @@ class ReportDWHController extends Controller
 
         // Mendapatkan status kode HTTP
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        
+
         // Tutup cURL
         curl_close($ch);
-        
+
         // Decode respons JSON
         return $responseData = json_decode($response, true);
     }
 
-    private function getWilker(){
+    private function getWilker()
+    {
         $url = "http://172.27.1.52:5252/dwh_api/master/wilker";
-        
+
         // Inisialisasi cURL
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1019,11 +1120,11 @@ class ReportDWHController extends Controller
         $wilayah = $responseData['data_wilker'];
         return $wilayah;
     }
-    
+
     private function getKanwil()
-    {    
+    {
         $url = "http://172.27.1.52:5252/dwh_api/master/kanwil";
-        
+
         // Inisialisasi cURL
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1152,6 +1253,3 @@ class ReportDWHController extends Controller
         return $dataLob['data_jenis_penjaminan'];
     }
 }
-
-
-?>

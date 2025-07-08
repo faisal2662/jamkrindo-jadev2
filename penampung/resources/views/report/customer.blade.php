@@ -115,7 +115,7 @@
         var table = new DataTable('#customers-table', {
             destroy: true,
             processing: true,
-            serverSide: true,
+            serverSide: false,
             ajax: {
                 url: "{{ route('report.customer.getData') }}",
                 type: 'GET'

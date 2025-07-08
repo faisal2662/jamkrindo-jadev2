@@ -213,7 +213,7 @@ class LoginController extends Controller
             ->first();
             $user = User::where('kd_user', $id)->first();
      
-        if ($otp) {
+        if ($otp) { 
             // if (true) {
            
             Auth::guard('web')->login($user);

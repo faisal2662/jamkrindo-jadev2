@@ -20,7 +20,7 @@ class RegionOfManagementController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index() 
     {
         //
         $role = Role::where('id_account', Auth::user()->kd_user)->where('id_menu', 8)->first();

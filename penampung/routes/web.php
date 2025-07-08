@@ -349,5 +349,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/kanca-detail', [JamnationController::class, 'kancaDetail'])->name('jamnation.kancaDetail');
         Route::get('/kanwil-all', [JamnationController::class, 'kanwil'])->name('jamnation.kanwil');
         Route::get('/kck-all', [JamnationController::class, 'kck'])->name('jamnation.kck');
+        Route::get('/kck-detail', [JamnationController::class, 'kckDetail'])->name('jamnation.kckDetail');
     });
 });

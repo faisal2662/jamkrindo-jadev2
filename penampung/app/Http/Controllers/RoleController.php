@@ -174,16 +174,16 @@ class RoleController extends Controller
             //     'menu' => 'Service SBR002',
             //     'type' => 'SUB_MENU',
             // ],
-            // [
+            // [ 
             //     'id_menu' => 28,
             //     'menu' => 'Service PDR008',
             //     'type' => 'SUB_MENU',
             // ],
-            // [
-            //     'id_menu' => 29,
-            //     'menu' => 'SMTP',
-            //     'type' => 'MENU',
-            // ],
+            [
+                'id_menu' => 29,
+                'menu' => 'SMTP',
+                'type' => 'MENU',
+            ],
             [
                 'id_menu' => 30,
                 'menu' => 'Audit Trail',

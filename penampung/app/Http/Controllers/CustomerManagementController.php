@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers;
 
-require_once base_path('vendor/PhpSpreadsheet/autoload.php');
+require_once 'thirdparty/vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+
+
 use Illuminate\Support\Facades\Response;
 
 use Carbon\Carbon;
@@ -724,7 +730,7 @@ class CustomerManagementController extends Controller
         if (Auth::user()->id_role != 1) {
             $customer = Customer::with(['city', 'province', 'Branch'])->where('kd_cabang', Auth::user()->branch_code)->where('is_delete', 'N')->whereBetween('created_date', [$request->start, $request->end])->get();
         } else {
-            $customer = Customer::with(['city', 'province', 'Branch'])->where('is_delete', 'N')->get();
+            $customer = Customer::with(['city', 'province', 'Branch'])->where('is_delete', 'N')->whereBetween('created_date', [$request->start, $request->end])->get();
         }
         // $customer = customer::with(['city', 'province', 'branch'])->whereBetween('created_date', [$request->start, $request->end])->where('is_delete', 'N')->get();
         // return view('customer-management.export-pdf');
@@ -826,7 +832,115 @@ class CustomerManagementController extends Controller
         $start = $request->start;
         $end = $request->end;
 
-        return view('customer-management.export-excel', compact('customer', 'start', 'end'));
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // ✅ Tambahkan kop surat
+        $drawing = new Drawing();
+        $drawing->setName('Kop Surat');
+        $drawing->setDescription('Kop Laporan Customer');
+        $drawing->setPath(base_path('../assets/img/kop-surat.png')); // ✅ Gunakan `public_path()` bukan `asset()`
+        $drawing->setHeight(100);
+        $drawing->setCoordinates('D1');
+        $drawing->setWorksheet($sheet);
+        
+        // ✅ Header laporan
+        $sheet->mergeCells('A6:I6');
+        $sheet->mergeCells('A7:I7');
+        $sheet->setCellValue('A6', 'Laporan Customer');
+        $sheet->setCellValue('A7', 'Tanggal ' . $start . ' s/d ' . $end);
+        
+        $sheet->getStyle('A6')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 16],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        $sheet->getStyle('A7')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 14],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        // ✅ Header kolom
+        $sheet->setCellValue('A9', 'No');
+        $sheet->setCellValue('B9', 'Nama Customer');
+        $sheet->setCellValue('C9', 'Cabang');
+        $sheet->setCellValue('D9', 'Email');
+        $sheet->setCellValue('E9', 'No. Hp');
+        $sheet->setCellValue('F9', 'Nama Perusahaan');
+        $sheet->setCellValue('G9', 'Provinsi Perusahaan');
+        $sheet->setCellValue('H9', 'Kota Perusahaan');
+        $sheet->setCellValue('I9', 'Status');
+        
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+                'size' => 12,
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '0070C0'],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
+        ];
+        
+        $sheet->getStyle('A9:I9')->applyFromArray($headerStyle);
+        
+        // ✅ Data isi
+        $customers = Customer::with(['city', 'province', 'branch'])
+            ->whereBetween('created_date', [$request->start, $request->end])
+            ->where('m_customer.is_delete', 'N')
+            ->get();
+        
+        $row = 10;
+        $no = 1;
+        
+        foreach ($customers as $item) {
+            $sheet->setCellValue("A{$row}", $no++);
+            $sheet->setCellValue("B{$row}", $item->nama_customer);
+            $sheet->setCellValue("C{$row}", $item->branch->nm_cabang ?? '-');
+            $sheet->setCellValue("D{$row}", $item->email_customer);
+            $sheet->setCellValue("E{$row}", $item->hp_customer);
+            $sheet->setCellValue("F{$row}", $item->company_name);
+            $sheet->setCellValue("G{$row}", $item->province->nm_provinsi ?? '-');
+            $sheet->setCellValue("H{$row}", $item->city->nm_kota ?? '-');
+            $sheet->setCellValue("I{$row}", $item->status_customer);
+            $row++;
+        }
+        
+        $lastRow = $row - 1;
+        $sheet->getStyle("A10:I{$lastRow}")->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
+        ]);
+        
+        // ✅ Auto-size kolom
+        foreach (range('A', 'I') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        
+        // ✅ Download file
+        $writer = new Xlsx($spreadsheet);
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, 'Laporan Customer.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+
+        // return view('customer-management.export-excel', compact('customer', 'start', 'end'));
     }
 
     public function resetPassword(Request $request)

@@ -220,7 +220,7 @@ class JamnationController extends Controller
                     'id_mst_kanwil' => $value["id_mst_kanwil"],
                     'nama_kanwil' => $value["nama_kanwil"],
                     // 'created_date' => date('Y-m-d H:i:s'),
-                    'is_deleted' => 'N'
+                    'is_delete' => 'N'
                 ];
                 KancaJamnation::where('id_kanca', $value['id'])->update($dataKanca);
                 // return response()->json_encode(['status' => 'success', 'msg' => 'Data berhasil diupdate'], 200);
@@ -237,7 +237,7 @@ class JamnationController extends Controller
                     'id_mst_kanwil' => $value["id_mst_kanwil"],
                     'nama_kanwil' => $value["nama_kanwil"],
                     // 'created_date' => date('Y-m-d H:i:s'),
-                    'is_deleted' => 'N'
+                    'is_delete' => 'N'
                 ];
                 KancaJamnation::create($dataKanca);
                 // return response()->json_encode(['status' => 'success', 'msg' => 'Data berhasil disimpan'], 200);
@@ -285,11 +285,11 @@ class JamnationController extends Controller
                     'latitude_cabang' => $value["latitude"],
                     'longitude_cabang' => $value["longitude"],
                     'wilker' => $value["wilker"],
-                    'id_mst_knca' => $value["id_mst_kanca"],
+                    'id_mst_kanca' => $value["id_mst_kanca"],
                     'nama_kanwil' => $value["nama_kanca"],
                     'kup'  => true,
                     // 'created_date' => date('Y-m-d H:i:s'),
-                    'is_deleted' => 'N'
+                    'is_delete' => 'N'
                 ];
                 KancaJamnation::where('id_kup', $value['id'])->update($dataKanca);
                 // return response()->json_encode(['status' => 'success', 'msg' => 'Data berhasil diupdate'], 200);
@@ -307,7 +307,7 @@ class JamnationController extends Controller
                     'nama_kanwil' => $value["nama_kanca"],
                     'kup'  => true,
                     // 'created_date' => date('Y-m-d H:i:s'),
-                    'is_deleted' => 'N'
+                    'is_delete' => 'N'
                 ];
                 KancaJamnation::create($dataKanca);
                 // return response()->json_encode(['status' => 'success', 'msg' => 'Data berhasil disimpan'], 200);
@@ -373,6 +373,7 @@ class JamnationController extends Controller
         $getKup = KancaJamnation::whereNotNull('kup')->get();
         // return $getKup;
         $getToken = $this->getToken();
+        
         $no =1;
         foreach ($getKup as $kup) {
             $url = 'http://10.220.70.26/api/external/kup/' . $kup->kode_uker;
@@ -424,6 +425,61 @@ class JamnationController extends Controller
         }
         return $nama;
     }
+    public function kckDetail()
+    {
+       
+        $getKup = KancaJamnation::whereNotNull('id_kck')->get();
+        // return $getKup;
+        $getToken = $this->getToken();
+        $token = $getToken["access_token"];
+        $no =1;
+        foreach ($getKup as $kup) {
+            $url = 'http://10.220.70.26/api/external/kck/' . $kup->kode_uker;
+
+            // Inisialisasi cURL
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $token,
+                'Content-Type: application/json'
+            ]);
+            // Mengatur batas waktu koneksi (dalam detik)
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); // Batas waktu untuk koneksi (10 detik)
+
+            // Mengatur batas waktu eksekusi total (dalam detik)
+            curl_setopt($ch, CURLOPT_TIMEOUT, 130); // Batas waktu total untuk permintaan (30 detik)
+
+            // Eksekusi cURL
+            $response = curl_exec($ch);
+
+            // Memeriksa error pada cURL
+            if (curl_errno($ch)) {
+                return false;
+            }
+
+            curl_close($ch);
+
+            // Mengubah JSON menjadi array PHPdd9
+            $data = json_decode($response, true);
+            // return $data['data']->alamat
+            if ($data) {
+                
+                foreach ($data["data"] as $key => $value) {
+                    
+                    $datakup = [
+                        'alamat_cabang' => $value["alamat"],
+                        'telp_cabang' => $value["no_telp"],
+                        'fax' => $value["fax"],
+                        'email' => $value["email"],
+
+                    ];
+                    $k = KancaJamnation::where('id_kck', $value['id_mst_kck'])->update($datakup);
+                    // return $k;
+                    // return [$datakup,$data];
+                }
+            }
+        }
+    }
 
     public function kck()
     {
@@ -458,37 +514,77 @@ class JamnationController extends Controller
         $data = json_decode($response, true);
 
         foreach ($data["data"] as $key => $value) {
-            $cekKck = KckJamnation::where('id_Kck', $value['id'])->first();
 
-            if ($cekKck) {
-                $dataKck = [
-                    'id_kanca' => $value["id"],
+            $cekKanca = KancaJamnation::where('id_kck', $value['id'])->first();
+
+            if ($cekKanca) {
+                // return 'ok';
+                $dataKanca = [
+                    'id_kck' => $value["id"],
                     'kode_uker' => $value["kodeUker"],
-                    'nama_uker' => $value["namaUker"],
+                    'nm_cabang' => $value["namaUker"],
                     'kelas_uker' => $value["kelasUker"],
-                    'latitude' => $value["latitude"],
-                    'longitude' => $value["longitude"],
+                    'latitude_cabang' => $value["latitude"],
+                    'longitude_cabang' => $value["longitude"],
                     'wilker' => $value["wilker"],
-                    'created_date' => date('Y-m-d H:i:s'),
-                    'is_deleted' => 'N'
+                    // 'id_mst_kanwil' => $value["id_mst_kanwil"],
+                    // 'nama_kanwil' => $value["nama_kanwil"],
+                    // 'created_date' => date('Y-m-d H:i:s'),
+                    'is_delete' => 'N'
                 ];
-                KckJamnation::where('id_kck', $value['id'])->update($dataKck);
+                KancaJamnation::where('id_kanca', $value['id'])->update($dataKanca);
                 // return response()->json_encode(['status' => 'success', 'msg' => 'Data berhasil diupdate'], 200);
             } else {
-                $dataKck = [
-                    'id_kanca' => $value["id"],
+                // return 'not ok';
+                $dataKanca = [
+                    'id_kck' => $value["id"],
                     'kode_uker' => $value["kodeUker"],
-                    'nama_uker' => $value["namaUker"],
+                    'nm_cabang' => $value["namaUker"],
                     'kelas_uker' => $value["kelasUker"],
-                    'latitude' => $value["latitude"],
-                    'longitude' => $value["longitude"],
+                    'latitude_cabang' => $value["latitude"],
+                    'longitude_cabang' => $value["longitude"],
                     'wilker' => $value["wilker"],
-                    'created_date' => date('Y-m-d H:i:s'),
-                    'is_deleted' => 'N'
+                    // 'id_mst_kanwil' => $value["id_mst_kanwil"],
+                    // 'nama_kanwil' => $value["nama_kanwil"],
+                    // 'created_date' => date('Y-m-d H:i:s'),
+                    'is_delete' => 'N'
                 ];
-                KckJamnation::create($dataKck);
+                KancaJamnation::create($dataKanca);
                 // return response()->json_encode(['status' => 'success', 'msg' => 'Data berhasil disimpan'], 200);
             }
+
+
+            // $cekKck = KckJamnation::where('id_Kck', $value['id'])->first();
+
+            // if ($cekKck) {
+            //     $dataKck = [
+            //         'id_kck' => $value["id"],
+            //         'kode_uker' => $value["kodeUker"],
+            //         'nama_uker' => $value["namaUker"],
+            //         'kelas_uker' => $value["kelasUker"],
+            //         'latitude' => $value["latitude"],
+            //         'longitude' => $value["longitude"],
+            //         'wilker' => $value["wilker"],
+            //         'created_date' => date('Y-m-d H:i:s'),
+            //         'is_deleted' => 'N'
+            //     ];
+            //     KckJamnation::where('id_kck', $value['id'])->update($dataKck);
+            //     return response()->json(['status' => 'success', 'msg' => 'Data berhasil diupdate'], 200);
+            // } else {
+            //     $dataKck = [
+            //         'id_kck' => $value["id"],
+            //         'kode_uker' => $value["kodeUker"],
+            //         'nama_uker' => $value["namaUker"],
+            //         'kelas_uker' => $value["kelasUker"],
+            //         'latitude' => $value["latitude"],
+            //         'longitude' => $value["longitude"],
+            //         'wilker' => $value["wilker"],
+            //         'created_date' => date('Y-m-d H:i:s'),
+            //         'is_deleted' => 'N'
+            //     ];
+            //     KckJamnation::create($dataKck);
+            //     return response()->json(['status' => 'success', 'msg' => 'Data berhasil disimpan'], 200);
+            // }
         }
     }
 

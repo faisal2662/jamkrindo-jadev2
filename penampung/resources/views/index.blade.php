@@ -287,7 +287,7 @@
                                              <i class="bi bi-file-earmark-text"></i>
                                          </div>
                                          <div class=" text-success ps-3">
-                                             <!-- <h6>2</h6> -->
+                                              <h6> {{count($dwh)}} </h6>
                                              <span class="text-danger small pt-1 fw-bold">Tersedia</span>
  
                                          </div>

@@ -14,11 +14,20 @@
             border-collapse: collapse;
             padding: 5px;
         }
-    </style> 
+
+        @page{
+            size:landscape;
+        }
+    </style>
 
 </head>
 
 <body>
+    <center>
+        <div class="kop">
+            <img src="{{ asset('assets/img/kop-surat.png') }}" alt="Kop Surat" style="width: 60%;">
+        </div>
+    </center>
     <h4 class="mt-4">Laporan Pelanggan</h4>
     <p> Dari Tanggal : <strong>{{ $start }}</strong></p>
     <p>Sampai Tanggal : <strong>{{ $end }}</strong></p>
@@ -50,7 +59,7 @@
                         <td></td>
                     @endif
                     <td>{{ $item->userid_customer }}</td>
-		    <td>{{ $item->email_customer }}</td>
+                    <td>{{ $item->email_customer }}</td>
                     <td>{{ $item->hp_customer }}</td>
                     <td>{{ $item->kd_referral_customer }}</td>
                     <td>{{ $item->company_name }}</td>
@@ -72,7 +81,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-    <script>window.print()</script>
+    <script>
+        window.print()
+    </script>
 </body>
 
 </html>

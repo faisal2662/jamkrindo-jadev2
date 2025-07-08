@@ -114,8 +114,8 @@
                                     </form>
                                     <div class="text-center mt-2">
                                         <p class="mb-0 text-muted" style="font-size:10pt;">Berizin dan diawasi oleh Otoritas Jasa Keuangan (OJK)</p>
-                                        <img src="{{ asset('assets/img/logo-ojk.png') }}" height="90px"
-                                            alt="" style="margin-top:-15px;margin-bottom:-15px;">
+                                        {{-- <img src="{{ asset('assets/img/logo-ojk.png') }}" height="90px"
+                                            alt="" style="margin-top:-15px;margin-bottom:-15px;"> --}}
                                     </div>
                                 </div>
                             </div>

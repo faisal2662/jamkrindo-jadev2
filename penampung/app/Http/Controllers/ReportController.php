@@ -13,6 +13,15 @@ use Illuminate\Support\Facades\Auth;
 use DataTables;
 use DB;
 
+require_once 'thirdparty/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+
 class ReportController extends Controller
 {
     /**
@@ -72,38 +81,38 @@ class ReportController extends Controller
         // }
         $start = $request->startDate;
         $end = $request->endDate;
-        
-        
+
+
         $customer = DB::table('m_customer')
-        ->leftJoin('m_kota', 'm_customer.company_city', '=', 'm_kota.kd_kota') 
-        ->leftJoin('m_provinsi', 'm_customer.company_province', '=', 'm_provinsi.kd_provinsi') 
-        ->leftJoin('m_cabang', 'm_customer.kd_cabang', '=', 'm_cabang.kd_cabang')
-        ->where('m_customer.is_delete', 'N')
-        ->whereBetween('m_customer.created_date', [$start, $end])
-        ->get();
+            ->leftJoin('m_kota', 'm_customer.company_city', '=', 'm_kota.kd_kota')
+            ->leftJoin('m_provinsi', 'm_customer.company_province', '=', 'm_provinsi.kd_provinsi')
+            ->leftJoin('m_cabang', 'm_customer.kd_cabang', '=', 'm_cabang.kd_cabang')
+            ->where('m_customer.is_delete', 'N')
+            ->whereBetween('m_customer.created_date', [$start, $end])
+            ->get();
 
         $idCustomer = [];
-        foreach($customer as $cs){
-            if(!in_array($cs->kd_customer, $idCustomer)){
+        foreach ($customer as $cs) {
+            if (!in_array($cs->kd_customer, $idCustomer)) {
                 $idCustomer[] = $cs->kd_customer;
             }
         }
         // $idCustomer = [1];
 
         $pesan = DB::table('t_percakapan')->leftJoin('t_pesan', 't_percakapan.id', 't_pesan.conversation_id')
-                ->leftJoin('m_customer','t_pesan.send_id', '=', 'm_customer.kd_customer')
-                ->leftJoin('m_users','t_pesan.send_id', '=', 'm_users.kd_user')
-                ->select(
-                    't_pesan.*',
-                    't_percakapan.id',
-                    't_percakapan.kd_customer',
-                    'm_customer.nama_customer',
-                    'm_users.employee_name'
-                )
-                // ->where('')
-                ->whereIn('t_percakapan.kd_customer', $idCustomer)
-                ->get();
-                // return $pesan;
+            ->leftJoin('m_customer', 't_pesan.send_id', '=', 'm_customer.kd_customer')
+            ->leftJoin('m_users', 't_pesan.send_id', '=', 'm_users.kd_user')
+            ->select(
+                't_pesan.*',
+                't_percakapan.id',
+                't_percakapan.kd_customer',
+                'm_customer.nama_customer',
+                'm_users.employee_name'
+            )
+            // ->where('')
+            ->whereIn('t_percakapan.kd_customer', $idCustomer)
+            ->get();
+        // return $pesan;
         $arrPesan = [];
         $firstMessage = '';
         $lastMessage = '';
@@ -111,12 +120,12 @@ class ReportController extends Controller
         $hours = '';
         $minutes = '';
         $diffInSeconds = '';
-        foreach($pesan as $psn){
+        foreach ($pesan as $psn) {
             $arrPesan[$psn->kd_customer][] = $psn;
             $psn->firstMessage = DB::table('t_pesan')->where('conversation_id', $psn->conversation_id)->where('status', '0')->orderBy('created_date', 'ASC')->first();
             $psn->secondMessage = DB::table('t_pesan')->where('conversation_id', $psn->conversation_id)->where('status', '1')->orderBy('created_date', 'ASC')->first();
             $psn->lastMessage = DB::table('t_pesan')->where('conversation_id', $psn->conversation_id)->orderBy('created_date', 'DESC')->first();
-            if(isset($psn->lastMessage)){
+            if (isset($psn->lastMessage)) {
                 $diffInSeconds = strtotime($psn->lastMessage->created_date) - strtotime($psn->firstMessage->created_date);
                 $psn->hours = floor($diffInSeconds / 3600);
                 $psn->minutes = floor(($diffInSeconds % 3600) / 60);
@@ -124,7 +133,7 @@ class ReportController extends Controller
         }
         // return $arrPesan;
 
-        foreach($customer as $csd){
+        foreach ($customer as $csd) {
             $csd->detail = isset($arrPesan[$csd->kd_customer]) ? $arrPesan[$csd->kd_customer] : [];
             $csd->firstMessage = isset($arrPesan[$csd->kd_customer][0]) ? $arrPesan[$csd->kd_customer][0]->firstMessage : '';
             $csd->lastMessage = isset($arrPesan[$csd->kd_customer][0]) ? $arrPesan[$csd->kd_customer][0]->lastMessage : '';
@@ -134,7 +143,7 @@ class ReportController extends Controller
             // $csd->lastMessage = isset($lastMessage[$csd->kd_customer]) ? $lastMessage[$csd->kd_customer] : '[]';
             // if($lastMessage != ''){
             // }
-            if(isset($arrPesan[$csd->kd_customer][0])){
+            if (isset($arrPesan[$csd->kd_customer][0])) {
                 $csd->hours = $arrPesan[$csd->kd_customer][0]->hours;
                 $csd->minutes = $arrPesan[$csd->kd_customer][0]->minutes;
             }
@@ -148,7 +157,145 @@ class ReportController extends Controller
         $customer = customer::with(['city', 'province', 'branch'])->whereBetween('created_date', [$request->startDate, $request->endDate])->where('is_delete', 'N')->get();
         $start = $request->startDate;
         $end = $request->endDate;
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
+        // ✅ Tambahkan kop surat (gambar PNG)
+        $drawing = new Drawing();
+        $drawing->setName('Kop ');
+        $drawing->setDescription('Kop Jamkrindo');
+        $drawing->setPath(base_path('../assets/img/kop-surat.png')); // Path ke file PNG kamu
+        // $drawing->setPath(asset('assets/img/kop-surat.png')); // Path ke file PNG kamu
+        $drawing->setHeight(100); // Sesuaikan tinggi
+        $drawing->setCoordinates('G1'); // Mulai dari sel A1
+        $drawing->setWorksheet($sheet);
+
+        // ✅ Mulai isi data setelah kop (misalnya dari baris 6)
+        $sheet->mergeCells('A7:N7');
+        $sheet->setCellValue('A7', 'Laporan Customer');
+        $sheet->getStyle('A7')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->setCellValue('A9', 'No.');
+        $sheet->setCellValue('B9', 'Nama User Jade');
+        $sheet->setCellValue('C9', 'Unit Kerja');
+        $sheet->setCellValue('D9', 'Username');
+        $sheet->setCellValue('E9', 'Email');
+        $sheet->setCellValue('F9', 'No. Telpon');
+        $sheet->setCellValue('G9', 'Kode Rederral'); 
+        $sheet->setCellValue('H9', 'Nama Perusahaan');
+        $sheet->setCellValue('I9', 'Provinsi Perusahaan');
+        $sheet->setCellValue('J9', 'Kota Perusahaan');
+        $sheet->setCellValue('K9', 'Start Chat');
+        $sheet->setCellValue('L9', 'End Chat');
+        $sheet->setCellValue('M9', 'Duration chat');
+        $sheet->setCellValue('N9', 'Created Date');
+
+
+        // style
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+                'size' => 12,
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '0070C0'],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
+        ];
+
+        $sheet->getStyle("A9:N9")->applyFromArray($headerStyle);
+        $highestColumn = $sheet->getHighestColumn();
+        foreach (range('D', $highestColumn) as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        // Misal kamu punya data $user
+        $row = 10;
+        $no =1;
+
+        foreach ($customer as $item) {
+        $getConversation = DB::table('t_percakapan')->where('kd_customer', $item->kd_customer)->first();
+                    $conversation = DB::table('t_percakapan')->where('kd_customer', $item->kd_customer)->get();
+                    $hours = '';
+                    $minutes = '';
+                    if ($getConversation) {
+                        $firstMessage = DB::table('t_pesan')
+                            ->where('conversation_id', $getConversation->id)
+                            ->where('status', '0')
+                            ->orderBy('created_date', 'ASC')
+                            ->first();
+                        $secondMessage = DB::table('t_pesan')
+                            ->where('conversation_id', $getConversation->id)
+                            ->where('status', '1')
+                            ->orderBy('created_date', 'ASC')
+                            ->first();
+                        $lastMessage = DB::table('t_pesan')
+                            ->where('conversation_id', $getConversation->id)
+                            ->orderBy('created_date', 'DESC')
+                            ->first();
+                        $startTime = new \DateTime($firstMessage->created_date);
+                        $endTime = new \DateTime($lastMessage->created_date);
+                        $diffInSeconds =
+                            strtotime($lastMessage->created_date) - strtotime($firstMessage->created_date);
+                        $hours = floor($diffInSeconds / 3600);
+                        $minutes = floor(($diffInSeconds % 3600) / 60);
+                    }
+            
+
+            $sheet->setCellValue("A{$row}", $no++);
+            $sheet->setCellValue("B{$row}", $item->nama_customer);
+
+
+            $sheet->setCellValue("C{$row}", $item->branch ? $item->branch->nm_cabang : '');
+
+            $sheet->setCellValue("D{$row}", $item->userid_customer ?? '-');
+            $sheet->setCellValue("E{$row}", $item->email_customer ?? '-');
+            $sheet->setCellValue("F{$row}", $item->hp_customer);
+            $sheet->setCellValue("G{$row}", $item->kd_referral_customer);
+            $sheet->setCellValue("H{$row}", $item->company_name);
+            $sheet->setCellValue("I{$row}", $item->province ? $item->province->nm_provinsi : '');
+            $sheet->setCellValue("J{$row}", $item->city ? $item->city->nm_kota : '');
+        if($getConversation){
+
+            $sheet->setCellValue("K{$row}", $firstMessage->created_date);
+            $sheet->setCellValue("L{$row}", $lastMessage->created_date);
+            $sheet->setCellValue("M{$row}", $hours . ' Jam ' . $minutes . ' Menit');
+        }else {
+
+            $sheet->setCellValue("K{$row}", '');
+            $sheet->setCellValue("L{$row}", '');
+            $sheet->setCellValue("M{$row}", '');
+
+        }
+            $sheet->setCellValue("N{$row}", date('d-m-Y', strtotime($item->created_date)));
+            $row++;
+        }
+        $lastRow = $row - 1;
+        $sheet->getStyle("A10:N{$lastRow}")->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
+        ]);
+        $writer = new Xlsx($spreadsheet);
+ 
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, 'Laporan Customer.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+        
         return view('report.customerExcel', compact('customer', 'start', 'end'));
     }
 
@@ -182,37 +329,37 @@ class ReportController extends Controller
         // ->where('m_customer.is_delete', 'N')
         // ->groupBy('m_customer.nama_customer','m_customer.hp_customer', 'm_customer.email_customer', 'm_customer.userid_customer', 't_percakapan.id', 't_pesan.message')
         // ->get();
-        
+
         $customer = DB::table('m_customer')
-        ->leftJoin('m_kota', 'm_customer.company_city', '=', 'm_kota.kd_kota') 
-        ->leftJoin('m_provinsi', 'm_customer.company_province', '=', 'm_provinsi.kd_provinsi') 
-        ->leftJoin('m_cabang', 'm_customer.kd_cabang', '=', 'm_cabang.kd_cabang')
-        ->where('m_customer.is_delete', 'N')
-        ->whereBetween('m_customer.created_date', [$start, $end])
-        ->get();
+            ->leftJoin('m_kota', 'm_customer.company_city', '=', 'm_kota.kd_kota')
+            ->leftJoin('m_provinsi', 'm_customer.company_province', '=', 'm_provinsi.kd_provinsi')
+            ->leftJoin('m_cabang', 'm_customer.kd_cabang', '=', 'm_cabang.kd_cabang')
+            ->where('m_customer.is_delete', 'N')
+            ->whereBetween('m_customer.created_date', [$start, $end])
+            ->get();
 
         $idCustomer = [];
-        foreach($customer as $cs){
-            if(!in_array($cs->kd_customer, $idCustomer)){
+        foreach ($customer as $cs) {
+            if (!in_array($cs->kd_customer, $idCustomer)) {
                 $idCustomer[] = $cs->kd_customer;
             }
         }
         // $idCustomer = [1];
 
         $pesan = DB::table('t_percakapan')->leftJoin('t_pesan', 't_percakapan.id', 't_pesan.conversation_id')
-                ->leftJoin('m_customer','t_pesan.send_id', '=', 'm_customer.kd_customer')
-                ->leftJoin('m_users','t_pesan.send_id', '=', 'm_users.kd_user')
-                ->select(
-                    't_pesan.*',
-                    't_percakapan.id',
-                    't_percakapan.kd_customer',
-                    'm_customer.nama_customer',
-                    'm_users.employee_name'
-                )
-                // ->where('')
-                ->whereIn('t_percakapan.kd_customer', $idCustomer)
-                ->get();
-                // return $pesan;
+            ->leftJoin('m_customer', 't_pesan.send_id', '=', 'm_customer.kd_customer')
+            ->leftJoin('m_users', 't_pesan.send_id', '=', 'm_users.kd_user')
+            ->select(
+                't_pesan.*',
+                't_percakapan.id',
+                't_percakapan.kd_customer',
+                'm_customer.nama_customer',
+                'm_users.employee_name'
+            )
+            // ->where('')
+            ->whereIn('t_percakapan.kd_customer', $idCustomer)
+            ->get();
+        // return $pesan;
         $arrPesan = [];
         $firstMessage = '';
         $lastMessage = '';
@@ -220,12 +367,12 @@ class ReportController extends Controller
         $hours = '';
         $minutes = '';
         $diffInSeconds = '';
-        foreach($pesan as $psn){
+        foreach ($pesan as $psn) {
             $arrPesan[$psn->kd_customer][] = $psn;
             $psn->firstMessage = DB::table('t_pesan')->where('conversation_id', $psn->conversation_id)->where('status', '0')->orderBy('created_date', 'ASC')->first();
             $psn->secondMessage = DB::table('t_pesan')->where('conversation_id', $psn->conversation_id)->where('status', '1')->orderBy('created_date', 'ASC')->first();
             $psn->lastMessage = DB::table('t_pesan')->where('conversation_id', $psn->conversation_id)->orderBy('created_date', 'DESC')->first();
-            if(isset($psn->lastMessage)){
+            if (isset($psn->lastMessage)) {
                 $diffInSeconds = strtotime($psn->lastMessage->created_date) - strtotime($psn->firstMessage->created_date);
                 $psn->hours = floor($diffInSeconds / 3600);
                 $psn->minutes = floor(($diffInSeconds % 3600) / 60);
@@ -233,7 +380,7 @@ class ReportController extends Controller
         }
         // return $arrPesan;
 
-        foreach($customer as $csd){
+        foreach ($customer as $csd) {
             $csd->detail = isset($arrPesan[$csd->kd_customer]) ? $arrPesan[$csd->kd_customer] : [];
             $csd->firstMessage = isset($arrPesan[$csd->kd_customer][0]) ? $arrPesan[$csd->kd_customer][0]->firstMessage : '';
             $csd->lastMessage = isset($arrPesan[$csd->kd_customer][0]) ? $arrPesan[$csd->kd_customer][0]->lastMessage : '';
@@ -243,7 +390,7 @@ class ReportController extends Controller
             // $csd->lastMessage = isset($lastMessage[$csd->kd_customer]) ? $lastMessage[$csd->kd_customer] : '[]';
             // if($lastMessage != ''){
             // }
-            if(isset($arrPesan[$csd->kd_customer][0])){
+            if (isset($arrPesan[$csd->kd_customer][0])) {
                 $csd->hours = $arrPesan[$csd->kd_customer][0]->hours;
                 $csd->minutes = $arrPesan[$csd->kd_customer][0]->minutes;
             }
@@ -272,16 +419,16 @@ class ReportController extends Controller
         // ->groupBy('m_customer.kd_customer', 'm_customer.nama_customer') // Grouping berdasarkan customer
         // ->get();
         //         return $customers;
-    //     $customer = Customer::with(['city', 'province', 'branch', 'percakapan.message'])
-    // ->whereBetween('created_date', [$request->startDate, $request->endDate])
-    // ->where('is_delete', 'N')
-    // ->chunk(100, function ($customers) {
-    //     foreach ($customers as $customer) {
-    //         // Proses setiap customer
-    //     }
-    // });
+        //     $customer = Customer::with(['city', 'province', 'branch', 'percakapan.message'])
+        // ->whereBetween('created_date', [$request->startDate, $request->endDate])
+        // ->where('is_delete', 'N')
+        // ->chunk(100, function ($customers) {
+        //     foreach ($customers as $customer) {
+        //         // Proses setiap customer
+        //     }
+        // });
 
-    // return 'ok';
+        // return 'ok';
         // $messages = '';
 
         // // Query data customer dengan eager loading

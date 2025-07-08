@@ -24,6 +24,17 @@ header("Content-Disposition: attachment; filename=laporanpelanggan.xls");
 </head>
 
 <body>
+    <div class="row">
+        <div class="col-md-12" style="border-bottom: 1px solid #000;">
+            <center>
+                <img src="{{ asset('assets/img/kop-surat.png') }}" style="width: 60%;border-radius: 5px;">
+            </center>
+            <p>&nbsp;</p>
+        </div>
+        <div class="col-md-12" style="border-top: 3px solid #000;margin-top: 5px;">
+            <p>&nbsp;</p>
+        </div>
+    </div>
     <h4 class="mt-4">Laporan DWH SPD</h4>
     <p> Dari Tanggal : <strong>{{ $start }}</strong></p>
     <p>Sampai Tanggal : <strong>{{ $end }}</strong></p>

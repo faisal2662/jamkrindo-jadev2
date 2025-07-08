@@ -40,7 +40,7 @@
                                     <th>Aksi</th>
                                     <th>Master</th>
                                     <th>Nama User</th>
-                                    <th>Npp User</th>
+                                    <th>NPP User</th>
                                     <th>Role</th>
                                     <th>Cabang</th>
                                     <th>Tanggal / Waktu</th>

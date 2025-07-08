@@ -498,7 +498,7 @@ class UserManagementController extends Controller
 
             if ($act->employee_status != 'Active') {
                 $btn = 'text-bg-danger ';
-            } 
+            }
             $act->no = $no++;
             if ($act->status_data == 'local') {
 
@@ -512,8 +512,7 @@ class UserManagementController extends Controller
                 $act->action =   "<a href='users-management/lihat/" . $act->kd_user . "' class='btn'><i class='bi bi-search'></i></a>  <a href='users-management/edit/" . $act->kd_user . "' class='btn'><i class='bi bi-pencil-square'></i></a>";
             } else if ($role->can_update == 'Y') {
                 $act->action =   "<a href='users-management/lihat/" . $act->kd_user . "' class='btn'><i class='bi bi-search'></i></a>  <a href='users-management/edit/" . $act->kd_user . "' class='btn'><i class='bi bi-pencil-square'></i></a>";
-            } 
-            else if ($role->can_delete == 'Y') {
+            } else if ($role->can_delete == 'Y') {
                 $act->action =   "<a href='users-management/lihat/" . $act->kd_user . "' class='btn'><i class='bi bi-search'></i></a> ";
             } else {
                 $act->action =   "<a href='users-management/lihat/" . $act->kd_user . "' class='btn'><i class='bi bi-search'></i></a> ";
@@ -705,11 +704,11 @@ class UserManagementController extends Controller
             // $dataRequest['id_role']  = $request->id_role  == 1 ? 'Super Admin' : 'Admin';
             $idRoleLama = $user->id_role == 1 ? 'Super Admin' : 'Admin';
             $idRoleBaru = $request->id_role == 1 ? 'Super Admin' : 'Admin';
-            
-            if($idRoleLama !== $idRoleBaru){
+
+            if ($idRoleLama !== $idRoleBaru) {
                 $lama = ['id_role' => $idRoleLama];
                 $baru = ['id_role' => $idRoleBaru];
-            }else {
+            } else {
                 $lama = $baru = [];
             }
 
@@ -781,7 +780,7 @@ class UserManagementController extends Controller
 
 
             if ($request->id_role == '1') {
-                $menu = [1, 2, 3, 4, 5, 6, 7, 8,9, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+                $menu = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
 
                 foreach ($menu as $idMenu) {
                     // Cari role berdasarkan id_account dan id_menu
@@ -790,23 +789,33 @@ class UserManagementController extends Controller
                         ->first();
 
                     if (!$role) {
-                        // Jika belum ada, buat baru
                         $role = new Role();
                         $role->id_account = $id;
                         $role->id_menu = $idMenu;
-                    }
+                        // Set hak akses
+                        $role->can_access  = 'Y';
+                        $role->can_create  = 'Y';
+                        $role->can_approve = 'Y';
+                        $role->can_delete = 'Y';
+                        $role->can_update  = 'Y';
+                        $role->save(); // gunakan save() karena bisa insert atau update
+                    } else {
 
-                    // Set hak akses
-                    $role->can_access  = 'Y';
-                    $role->can_create  = 'Y';
-                    $role->can_approve = 'Y';
-                    $role->can_update  = 'Y';
-                    $role->update(); // gunakan save() karena bisa insert atau update
+
+
+                        // Set hak akses
+                        $role->can_access  = 'Y';
+                        $role->can_create  = 'Y';
+                        $role->can_approve = 'Y';
+                        $role->can_delete = 'Y';
+                        $role->can_update  = 'Y';
+                        $role->update(); // gunakan save() karena bisa insert atau update
+                    }
                 }
             } else {
 
 
-                $menu = [2,  5, 6, 7 ,8,9, 11, 12, 13, 14, 15, 16,  22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+                $menu = [2,  5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16,  22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
                 foreach ($menu as $idMenu) {
                     // Cari role berdasarkan id_account dan id_menu
                     $role = Role::where('id_account', $id)
@@ -814,18 +823,28 @@ class UserManagementController extends Controller
                         ->first();
 
                     if (!$role) {
-                        // Jika belum ada, buat baru
                         $role = new Role();
                         $role->id_account = $id;
                         $role->id_menu = $idMenu;
-                    }
+                        // Set hak akses
+                        $role->can_access  = 'N';
+                        $role->can_create  = 'N';
+                        $role->can_approve = 'N';
+                        $role->can_delete = 'N';
+                        $role->can_update  = 'N';
+                        $role->save(); // gunakan save() karena bisa insert atau update
+                    } else {
 
-                    // Set hak akses
-                    $role->can_access  = 'N';
-                    $role->can_create  = 'N';
-                    $role->can_approve = 'N';
-                    $role->can_update  = 'N';
-                    $role->update(); // gunakan save() karena bisa insert atau update
+
+
+                        // Set hak akses
+                        $role->can_access  = 'N';
+                        $role->can_create  = 'N';
+                        $role->can_approve = 'N';
+                        $role->can_delete = 'N';
+                        $role->can_update  = 'N';
+                        $role->update(); // gunakan save() karena bisa insert atau update
+                    }
                 }
             }
             // return response()->json(['status' => 'success'], 200);
